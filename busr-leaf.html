@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>🍃 إرشيف بُصر</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  margin: 40px;
+  background: #f8fdf8;
+}
+
+h2 {
+  color: #2e7d32;
+}
+
+input {
+  width: 60%;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #2e7d32;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1b5e20;
+}
+
+#qrcode {
+  margin-top: 20px;
+}
+
+#archive {
+  margin-top: 30px;
+  display: none;
+  text-align: left;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.link-item {
+  background: #fff;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🍃 أرشيف بُصر للباركود 🍃</h2>
+
+<input type="text" id="url" placeholder="أدخل الرابط هنا">
+
+<br>
+
+<button onclick="generateQR()">إنشاء باركود</button>
+<button onclick="saveLink()">حفظ الرابط</button>
+<button onclick="toggleArchive()">📂 عرض الأرشيف</button>
+
+<div id="qrcode"></div>
+
+<div id="archive"></div>
+
+<script>
+function generateQR() {
+  let url = document.getElementById("url").value;
+  document.getElementById("qrcode").innerHTML = "";
+  QRCode.toCanvas(document.createElement('canvas'), url, function (error, canvas) {
+    if (!error) document.getElementById("qrcode").appendChild(canvas);
+  });
+}
+
+function saveLink() {
+  let url = document.getElementById("url").value;
+  if (!url) return;
+
+  let links = JSON.parse(localStorage.getItem("busrLinks") || "[]");
+  links.push(url);
+  localStorage.setItem("busrLinks", JSON.stringify(links));
+
+  alert("تم حفظ الرابط 🌿");
+}
+
+function toggleArchive() {
+  let archiveDiv = document.getElementById("archive");
+  if (archiveDiv.style.display === "none") {
+    archiveDiv.style.display = "block";
+    showArchive();
+  } else {
+    archiveDiv.style.display = "none";
+  }
+}
+
+function showArchive() {
+  let archiveDiv = document.getElementById("archive");
+  let links = JSON.parse(localStorage.getItem("busrLinks") || "[]");
+
+  archiveDiv.innerHTML = "";
+
+  links.reverse().forEach((link, index) => {
+    let div = document.createElement("div");
+    div.className = "link-item";
+
+    div.innerHTML = `
+      <span>${link}</span>
+      <button onclick="reuseLink('${link}')">استخدام</button>
+    `;
+
+    archiveDiv.appendChild(div);
+  });
+}
+
+function reuseLink(link) {
+  document.getElementById("url").value = link;
+  generateQR();
+}
+</script>
+
+</body>
+</html>
