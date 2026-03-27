@@ -8,44 +8,33 @@
 
 <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   text-align: center;
   background: #f4f8f6;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 20px;
 }
 
 h2 {
-  margin-top: 20px;
+  margin-top: 40px;
   color: #2e7d32;
   cursor: pointer;
 }
 
 input {
-  width: 320px;
-  max-width: 90%;
+  width: 300px;
   padding: 10px;
-  margin: 6px;
+  margin-top: 15px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 15px;
 }
 
 button {
-  padding: 10px 16px;
-  margin: 6px;
+  padding: 10px 20px;
+  margin: 8px;
   border: none;
   border-radius: 8px;
   background: #2e7d32;
   color: white;
   cursor: pointer;
-  font-size: 14px;
 }
 
 button:hover {
@@ -54,144 +43,79 @@ button:hover {
 
 #qrcode {
   margin-top: 20px;
-  min-height: 220px;
 }
 
-#barcodeInfo {
-  margin-top: 10px;
-  color: #2e7d32;
-  font-size: 14px;
-  line-height: 1.8;
+#actions {
   display: none;
-}
-
-.actions {
-  margin-top: 10px;
-  display: none;
+  margin-top: 15px;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-  <h2 ondblclick="window.location.href='busr-leaf.html'">
-    🍃 صانع بُصر للباركود 🍃
-  </h2>
+<h2 ondblclick="window.location.href='busr-leaf.html'">
+🍃 صانع بُصر للباركود 🍃
+</h2>
 
-  <input type="text" id="barcodeName" placeholder="اسم الباركود">
-  <br>
-  <input type="text" id="url" placeholder="ألصقي الرابط هنا">
-  <br>
+<input type="text" id="url" placeholder="ألصقي الرابط هنا">
 
-  <button onclick="generateQR()">إنشاء الباركود</button>
+<br>
 
-  <div id="qrcode"></div>
+<button onclick="generateQR()">إنشاء الباركود</button>
 
-  <div id="barcodeInfo"></div>
+<div id="qrcode"></div>
 
-  <div class="actions" id="actionsBox">
-    <button onclick="downloadQR()">تحميل الباركود</button>
-    <button onclick="copyLink()">نسخ رابط الباركود</button>
-    <button onclick="copyQRImage()">نسخ صورة الباركود</button>
-  </div>
-
+<div id="actions">
+  <button onclick="downloadQR()">تحميل</button>
+  <button onclick="copyLink()">نسخ الرابط</button>
+  <button onclick="copyQR()">نسخ صورة الباركود</button>
 </div>
 
 <script>
-let canvasQR = null;
+let canvasQR;
 let currentURL = "";
-let currentName = "";
-let currentDate = "";
 
 function generateQR() {
-  let url = document.getElementById("url").value.trim();
-  let name = document.getElementById("barcodeName").value.trim();
+  let url = document.getElementById("url").value;
 
-  if (!url) {
-    alert("فضلاً أدخلي الرابط أولاً");
-    return;
-  }
-
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+  if (!url.startsWith("http")) {
     url = "https://" + url;
   }
 
   currentURL = url;
-  currentName = name || "بدون اسم";
-  currentDate = new Date().toLocaleString("ar-SA");
 
   document.getElementById("qrcode").innerHTML = "";
 
-  QRCode.toCanvas(document.createElement("canvas"), url, function (error, canvas) {
-    if (error) {
-      alert("حدث خطأ أثناء إنشاء الباركود");
-      return;
+  QRCode.toCanvas(document.createElement('canvas'), url, function (error, canvas) {
+    if (!error) {
+      canvasQR = canvas;
+      document.getElementById("qrcode").appendChild(canvas);
+      document.getElementById("actions").style.display = "block";
     }
-
-    canvasQR = canvas;
-    document.getElementById("qrcode").appendChild(canvas);
-
-    document.getElementById("barcodeInfo").style.display = "block";
-    document.getElementById("barcodeInfo").innerHTML = `
-      <div><strong>الاسم:</strong> ${escapeHtml(currentName)}</div>
-      <div><strong>تاريخ الإنشاء:</strong> ${escapeHtml(currentDate)}</div>
-    `;
-
-    document.getElementById("actionsBox").style.display = "block";
   });
 }
 
 function downloadQR() {
-  if (!canvasQR) {
-    alert("أنشئي الباركود أولاً");
-    return;
-  }
-
-  let link = document.createElement("a");
-  link.download = "busr-qr.png";
-  link.href = canvasQR.toDataURL("image/png");
+  let link = document.createElement('a');
+  link.download = "busr.png";
+  link.href = canvasQR.toDataURL();
   link.click();
 }
 
 function copyLink() {
-  if (!currentURL) {
-    alert("أنشئي الباركود أولاً");
-    return;
-  }
-
-  navigator.clipboard.writeText(currentURL)
-    .then(() => alert("تم نسخ الرابط ✅"))
-    .catch(() => alert("تعذر نسخ الرابط"));
+  navigator.clipboard.writeText(currentURL);
+  alert("تم نسخ الرابط ✅");
 }
 
-function copyQRImage() {
-  if (!canvasQR) {
-    alert("أنشئي الباركود أولاً");
-    return;
-  }
-
+function copyQR() {
   canvasQR.toBlob(blob => {
-    if (!blob) {
-      alert("تعذر نسخ صورة الباركود");
-      return;
-    }
-
-    const item = new ClipboardItem({ "image/png": blob });
-    navigator.clipboard.write([item])
-      .then(() => alert("تم نسخ صورة الباركود 📷"))
-      .catch(() => alert("المتصفح لم يسمح بنسخ الصورة"));
+    let item = new ClipboardItem({ "image/png": blob });
+    navigator.clipboard.write([item]);
+    alert("تم نسخ صورة الباركود 📷");
   });
 }
-
-function escapeHtml(text) {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 </script>
+
 </body>
 </html>
