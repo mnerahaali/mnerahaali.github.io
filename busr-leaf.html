@@ -1,38 +1,49 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>🍃 إرشيف بُصر</title>
+<title>🍃 إرشيف بُصر للباركود 🍃</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <style>
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   text-align: center;
-  margin: 40px;
-  background: #f8fdf8;
+  background: #f4f8f6;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
 }
 
 h2 {
   color: #2e7d32;
+  margin-bottom: 20px;
 }
 
 input {
-  width: 60%;
+  width: 340px;
+  max-width: 90%;
   padding: 10px;
-  margin: 10px;
+  margin: 6px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 15px;
 }
 
 button {
-  padding: 10px 15px;
-  margin: 5px;
+  padding: 10px 16px;
+  margin: 6px;
   border: none;
   border-radius: 8px;
   background: #2e7d32;
   color: white;
   cursor: pointer;
+  font-size: 14px;
 }
 
 button:hover {
@@ -41,99 +52,248 @@ button:hover {
 
 #qrcode {
   margin-top: 20px;
+  min-height: 220px;
 }
 
 #archive {
-  margin-top: 30px;
+  margin-top: 25px;
   display: none;
-  text-align: left;
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
+  text-align: right;
 }
 
-.link-item {
+.item {
   background: #fff;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 8px;
   border: 1px solid #ddd;
-  display: flex;
-  justify-content: space-between;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.item-title {
+  font-weight: bold;
+  color: #1b5e20;
+  margin-bottom: 6px;
+}
+
+.small {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
+  word-break: break-word;
+}
+
+.item-buttons {
+  margin-top: 10px;
+}
+
+.empty-note {
+  color: #666;
+  background: #fff;
+  border: 1px dashed #bbb;
+  border-radius: 10px;
+  padding: 18px;
 }
 </style>
 </head>
 
 <body>
+<div class="container">
 
-<h2>🍃 أرشيف بُصر للباركود 🍃</h2>
+  <h2>🍃 أرشيف بُصر للباركود 🍃</h2>
 
-<input type="text" id="url" placeholder="أدخل الرابط هنا">
+  <input type="text" id="name" placeholder="اسم الباركود">
+  <br>
+  <input type="text" id="url" placeholder="ألصقي الرابط هنا">
+  <br>
 
-<br>
+  <button onclick="generateQR()">إنشاء باركود</button>
+  <button onclick="saveItem()">حفظ الرابط</button>
+  <button onclick="toggleArchive()">📂 عرض الأرشيف</button>
 
-<button onclick="generateQR()">إنشاء باركود</button>
-<button onclick="saveLink()">حفظ الرابط</button>
-<button onclick="toggleArchive()">📂 عرض الأرشيف</button>
+  <div id="qrcode"></div>
 
-<div id="qrcode"></div>
+  <div id="archive"></div>
 
-<div id="archive"></div>
+</div>
 
 <script>
+let currentCanvas = null;
+let currentURL = "";
+let currentName = "";
+let currentDate = "";
+
 function generateQR() {
-  let url = document.getElementById("url").value;
+  let url = document.getElementById("url").value.trim();
+  let name = document.getElementById("name").value.trim();
+
+  if (!url) {
+    alert("فضلاً أدخلي الرابط أولاً");
+    return;
+  }
+
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://" + url;
+  }
+
+  currentURL = url;
+  currentName = name || "بدون اسم";
+  currentDate = new Date().toLocaleString("ar-SA");
+
   document.getElementById("qrcode").innerHTML = "";
-  QRCode.toCanvas(document.createElement('canvas'), url, function (error, canvas) {
-    if (!error) document.getElementById("qrcode").appendChild(canvas);
+
+  QRCode.toCanvas(document.createElement("canvas"), currentURL, function (error, canvas) {
+    if (error) {
+      alert("حدث خطأ أثناء إنشاء الباركود");
+      return;
+    }
+    currentCanvas = canvas;
+    document.getElementById("qrcode").appendChild(canvas);
   });
 }
 
-function saveLink() {
-  let url = document.getElementById("url").value;
-  if (!url) return;
+function saveItem() {
+  if (!currentURL) {
+    alert("أنشئي الباركود أولاً");
+    return;
+  }
 
-  let links = JSON.parse(localStorage.getItem("busrLinks") || "[]");
-  links.push(url);
-  localStorage.setItem("busrLinks", JSON.stringify(links));
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
 
-  alert("تم حفظ الرابط 🌿");
-}
+  data.push({
+    name: currentName,
+    url: currentURL,
+    date: currentDate
+  });
 
-function toggleArchive() {
-  let archiveDiv = document.getElementById("archive");
-  if (archiveDiv.style.display === "none") {
-    archiveDiv.style.display = "block";
-    showArchive();
-  } else {
-    archiveDiv.style.display = "none";
+  localStorage.setItem("busrData", JSON.stringify(data));
+  alert("تم حفظ الرابط في الأرشيف 🌿");
+
+  const archiveBox = document.getElementById("archive");
+  if (archiveBox.style.display === "block") {
+    renderArchive();
   }
 }
 
-function showArchive() {
-  let archiveDiv = document.getElementById("archive");
-  let links = JSON.parse(localStorage.getItem("busrLinks") || "[]");
+function toggleArchive() {
+  const archiveBox = document.getElementById("archive");
 
-  archiveDiv.innerHTML = "";
+  if (archiveBox.style.display === "none" || archiveBox.style.display === "") {
+    archiveBox.style.display = "block";
+    renderArchive();
+  } else {
+    archiveBox.style.display = "none";
+  }
+}
 
-  links.reverse().forEach((link, index) => {
-    let div = document.createElement("div");
-    div.className = "link-item";
+function renderArchive() {
+  const archiveBox = document.getElementById("archive");
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
+
+  archiveBox.innerHTML = "";
+
+  if (data.length === 0) {
+    archiveBox.innerHTML = <div class="empty-note">لا توجد عناصر محفوظة في الأرشيف بعد.</div>;
+    return;
+  }
+
+  data.slice().reverse().forEach((item, reversedIndex) => {
+    const originalIndex = data.length - 1 - reversedIndex;
+
+    const div = document.createElement("div");
+    div.className = "item";
 
     div.innerHTML = `
-      <span>${link}</span>
-      <button onclick="reuseLink('${link}')">استخدام</button>
+      <div class="item-title">${escapeHtml(item.name)}</div>
+      <div class="small"><strong>تاريخ الإنشاء:</strong> ${escapeHtml(item.date)}</div>
+      <div class="small"><strong>الرابط:</strong> ${escapeHtml(item.url)}</div>
+
+      <div class="item-buttons">
+        <button onclick="useItem(${originalIndex})">استخدام</button>
+        <button onclick="copyLinkByIndex(${originalIndex})">نسخ الرابط</button>
+        <button onclick="copyQRByIndex(${originalIndex})">نسخ صورة الباركود</button>
+        <button onclick="deleteItem(${originalIndex})">حذف</button>
+      </div>
     `;
 
-    archiveDiv.appendChild(div);
+    archiveBox.appendChild(div);
   });
 }
 
-function reuseLink(link) {
-  document.getElementById("url").value = link;
-  generateQR();
+function useItem(index) {
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
+  const item = data[index];
+  if (!item) return;
+
+  document.getElementById("name").value = item.name;
+  document.getElementById("url").value = item.url;
+
+  currentName = item.name;
+  currentURL = item.url;
+  currentDate = item.date;
+
+  document.getElementById("qrcode").innerHTML = "";
+
+  QRCode.toCanvas(document.createElement("canvas"), currentURL, function (error, canvas) {
+    if (error) {
+      alert("حدث خطأ أثناء إنشاء الباركود");
+      return;
+    }
+    currentCanvas = canvas;
+    document.getElementById("qrcode").appendChild(canvas);
+  });
+}
+
+function copyLinkByIndex(index) {
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
+  const item = data[index];
+  if (!item) return;
+
+  navigator.clipboard.writeText(item.url)
+    .then(() => alert("تم نسخ الرابط ✅"))
+    .catch(() => alert("تعذر نسخ الرابط"));
+}
+
+function copyQRByIndex(index) {
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
+  const item = data[index];
+  if (!item) return;
+
+  QRCode.toCanvas(document.createElement("canvas"), item.url, function (error, canvas) {
+    if (error) {
+      alert("حدث خطأ أثناء نسخ صورة الباركود");
+      return;
+    }
+
+    canvas.toBlob(blob => {
+      if (!blob) {
+        alert("تعذر تجهيز الصورة");
+        return;
+      }
+
+      const clipboardItem = new ClipboardItem({ "image/png": blob });
+      navigator.clipboard.write([clipboardItem])
+        .then(() => alert("تم نسخ صورة الباركود 📷"))
+        .catch(() => alert("المتصفح لم يسمح بنسخ الصورة"));
+    });
+  });
+}
+
+function deleteItem(index) {
+  let data = JSON.parse(localStorage.getItem("busrData") || "[]");
+  data.splice(index, 1);
+  localStorage.setItem("busrData", JSON.stringify(data));
+  renderArchive();
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 </script>
-
 </body>
 </html>
