@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>صانع بُصر للباركود</title>
+<title>✨ صانع بُصر للباركود</title>
+
 <style>
 body {
     font-family: Arial;
     text-align: center;
     background: #f4f6f8;
 }
+
 h2 {
     margin-top: 40px;
 }
+
 input {
     width: 300px;
     padding: 10px;
@@ -19,6 +22,7 @@ input {
     border-radius: 8px;
     border: 1px solid #ccc;
 }
+
 button {
     padding: 10px 20px;
     margin-top: 15px;
@@ -28,22 +32,30 @@ button {
     border-radius: 8px;
     cursor: pointer;
 }
+
 img {
     margin-top: 20px;
+    width: 200px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 </style>
+
 </head>
 
 <body>
 
-<h2>🌿 صانع بُصر للباركود</h2>
+<h2>✨ صانع بُصر للباركود ✨</h2>
 
 <input type="text" id="link" placeholder="ألصقي الرابط هنا">
+
 <br>
 
 <button onclick="generateQR()">إنشاء الباركود</button>
 
 <br>
+
 <img id="qr">
 
 <br>
@@ -53,12 +65,25 @@ img {
 <script>
 function generateQR() {
     var link = document.getElementById("link").value;
-    var qrUrl = "https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=" + link;
+
+    if(link === "") {
+        alert("فضلاً أدخلي رابط أولاً");
+        return;
+    }
+
+    var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(link);
+
     document.getElementById("qr").src = qrUrl;
 }
 
 function downloadQR() {
     var img = document.getElementById("qr").src;
+
+    if(img === "") {
+        alert("أنشئي الباركود أولاً");
+        return;
+    }
+
     var a = document.createElement("a");
     a.href = img;
     a.download = "barcode.png";
