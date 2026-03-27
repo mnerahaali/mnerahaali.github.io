@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>صانع بُصر للباركود</title>
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #f4f6f8;
+}
+h2 {
+    margin-top: 40px;
+}
+input {
+    width: 300px;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+button {
+    padding: 10px 20px;
+    margin-top: 15px;
+    border: none;
+    background: #2c7be5;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+img {
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌿 صانع بُصر للباركود</h2>
+
+<input type="text" id="link" placeholder="ألصقي الرابط هنا">
+<br>
+
+<button onclick="generateQR()">إنشاء الباركود</button>
+
+<br>
+<img id="qr">
+
+<br>
+
+<button onclick="downloadQR()">تحميل الباركود</button>
+
+<script>
+function generateQR() {
+    var link = document.getElementById("link").value;
+    var qrUrl = "https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=" + link;
+    document.getElementById("qr").src = qrUrl;
+}
+
+function downloadQR() {
+    var img = document.getElementById("qr").src;
+    var a = document.createElement("a");
+    a.href = img;
+    a.download = "barcode.png";
+    a.click();
+}
+</script>
+
+</body>
+</html>
