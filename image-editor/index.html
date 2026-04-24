@@ -2,121 +2,66 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>محرر الصور</title>
+<title>محرر الصور المتقدم</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo&family=Tajawal&family=Almarai&display=swap" rel="stylesheet">
 
 <style>
 body{
-font-family: Arial, sans-serif;
+font-family: Cairo;
 background:#f5f5f5;
 text-align:center;
-margin:0;
-padding:30px;
+padding:20px;
 }
-h1{margin-bottom:25px;}
 
 .panel{
-background:white;
-padding:18px;
-border-radius:14px;
-max-width:950px;
+background:#fff;
+padding:15px;
+border-radius:12px;
 margin:auto;
-box-shadow:0 4px 18px rgba(0,0,0,.08);
-}
-
-input, button, select{
-margin:6px;
-padding:10px;
-border-radius:8px;
-border:1px solid #bbb;
-}
-
-button{
-background:#111;
-color:white;
-cursor:pointer;
+max-width:900px;
 }
 
 canvas{
+border-radius:10px;
 margin-top:20px;
-max-width:95%;
-background:white;
-border-radius:12px;
+cursor:default;
 }
 
-.small{
-font-size:13px;
-color:#666;
+input,select,button{
+margin:5px;
+padding:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>✨ محرر الصور</h1>
+<h2>✨ محرر احترافي</h2>
 
 <div class="panel">
 
-<input type="file" id="upload" accept="image/*">
-
-<br><br>
-
-<input type="number" id="width" placeholder="العرض">
-<input type="number" id="height" placeholder="الارتفاع">
-<button onclick="resizeImage()">تغيير المقاس بجودة عالية</button>
+<input type="file" id="upload">
 
 <br>
 
-<button onclick="rotateImage()">تدوير 90°</button>
-<button onclick="resetImage()">استعادة الأصل</button>
+<input id="textInput" placeholder="اكتب النص">
+<button onclick="addText()">➕ إضافة نص</button>
 
-<br><br>
-
-<input type="text" id="captionText" placeholder="اكتبي النص هنا">
-
-<label>حجم الخط:</label>
-<input type="number" id="fontSize" value="34">
-
-<label>نوع الخط:</label>
 <select id="fontFamily">
+<option value="Cairo">Cairo</option>
+<option value="Tajawal">Tajawal</option>
+<option value="Almarai">Almarai</option>
 <option value="Arial">Arial</option>
-<option value="Tahoma">Tahoma</option>
-<option value="Verdana">Verdana</option>
-<option value="Georgia">Georgia</option>
-<option value="'Times New Roman'">Times New Roman</option>
 </select>
 
-<label>النمط:</label>
-<select id="fontWeight">
-<option value="bold">Bold</option>
-<option value="normal">عادي</option>
-</select>
-
-<label>لون الخط:</label>
-<input type="color" id="fontColor" value="#111111">
+<input type="color" id="color" value="#ffffff">
+<input type="range" id="size" min="20" max="100" value="40">
 
 <br>
 
-<label>لون الشريط:</label>
-<input type="color" id="barColor" value="#ffffff">
-
-<label>ارتفاع الشريط:</label>
-<input type="number" id="barHeight" value="90" min="30">
-
-<select id="barOption">
-<option value="yes">إضافة شريط أسفل الصورة</option>
-<option value="no">بدون شريط</option>
-</select>
-
-<br>
-
-<button onclick="addCaption()">إضافة النص</button>
-
-<br><br>
-
-<button onclick="copyImage()">نسخ الصورة</button>
-<button onclick="downloadImage()">تحميل الصورة</button>
-
-<p class="small">أفضل جودة تكون عند التصغير وليس التكبير.</p>
+<button onclick="download()">تحميل</button>
+<button onclick="copyImage()">نسخ</button>
 
 </div>
 
@@ -127,181 +72,113 @@ color:#666;
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let originalImage = new Image();
+let image = new Image();
+let texts = [];
+let selected = null;
 
-// تحسين الجودة
-function enableHighQuality(context){
-context.imageSmoothingEnabled = true;
-context.imageSmoothingQuality = "high";
-}
-
-// رسم الصورة
-function drawImageHighQuality(image, width, height){
-canvas.width = width;
-canvas.height = height;
-
-enableHighQuality(ctx);
-ctx.clearRect(0,0,width,height);
-ctx.drawImage(image,0,0,width,height);
-}
-
-// رفع صورة
-document.getElementById("upload").addEventListener("change", function(e){
-const file = e.target.files[0];
-if(!file) return;
-
+document.getElementById("upload").onchange = e=>{
 const reader = new FileReader();
-
-reader.onload = function(event){
-originalImage = new Image();
-
-originalImage.onload = function(){
-drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
-
-document.getElementById("width").value = originalImage.width;
-document.getElementById("height").value = originalImage.height;
+reader.onload = ev=>{
+image.src = ev.target.result;
+}
+reader.readAsDataURL(e.target.files[0]);
 };
 
-originalImage.src = event.target.result;
+image.onload = ()=>{
+canvas.width = image.width;
+canvas.height = image.height;
+draw();
 };
 
-reader.readAsDataURL(file);
+function addText(){
+texts.push({
+text: document.getElementById("textInput").value,
+x: canvas.width/2,
+y: canvas.height/2,
+size: 40,
+color: "#ffffff",
+font: "Cairo"
 });
-
-// تحويل الكانفاس إلى صورة
-function getCanvasAsImage(callback){
-const img = new Image();
-img.onload = () => callback(img);
-img.src = canvas.toDataURL("image/png",1.0);
+draw();
 }
 
-// تغيير المقاس
-function resizeImage(){
-const w = Number(document.getElementById("width").value);
-const h = Number(document.getElementById("height").value);
-
-if(!w || !h){
-alert("اكتبي المقاسات");
-return;
-}
-
-getCanvasAsImage(function(image){
-drawImageHighQuality(image,w,h);
-});
-}
-
-// تدوير
-function rotateImage(){
-const temp = document.createElement("canvas");
-const tctx = temp.getContext("2d");
-
-temp.width = canvas.height;
-temp.height = canvas.width;
-
-enableHighQuality(tctx);
-
-tctx.translate(temp.width/2,temp.height/2);
-tctx.rotate(Math.PI/2);
-tctx.drawImage(canvas,-canvas.width/2,-canvas.height/2);
-
-canvas.width = temp.width;
-canvas.height = temp.height;
-
-enableHighQuality(ctx);
-ctx.drawImage(temp,0,0);
-}
-
-// استعادة الأصل
-function resetImage(){
-if(!originalImage.src) return;
-
-drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
-
-document.getElementById("width").value = originalImage.width;
-document.getElementById("height").value = originalImage.height;
-}
-
-// إضافة نص
-function addCaption(){
-
-const text = document.getElementById("captionText").value.trim();
-if(!text){
-alert("اكتبي النص");
-return;
-}
-
-const fontSize = Number(document.getElementById("fontSize").value) || 34;
-const fontFamily = document.getElementById("fontFamily").value;
-const fontWeight = document.getElementById("fontWeight").value;
-const fontColor = document.getElementById("fontColor").value;
-
-const addBar = document.getElementById("barOption").value === "yes";
-const barColor = document.getElementById("barColor").value;
-const barHeight = addBar ? Number(document.getElementById("barHeight").value || 90) : 0;
-
-getCanvasAsImage(function(image){
-
-const newWidth = image.width;
-const newHeight = image.height + barHeight;
-
-canvas.width = newWidth;
-canvas.height = newHeight;
-
-enableHighQuality(ctx);
-
-ctx.fillStyle = "white";
-ctx.fillRect(0,0,newWidth,newHeight);
-
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
 ctx.drawImage(image,0,0);
 
-ctx.textBaseline = "middle";
+texts.forEach((t,i)=>{
+ctx.fillStyle = t.color;
+ctx.font = `${t.size}px ${t.font}`;
 ctx.textAlign = "center";
-ctx.direction = "rtl";
-ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+ctx.fillText(t.text, t.x, t.y);
 
-if(addBar){
-
-ctx.fillStyle = barColor;
-ctx.fillRect(0,image.height,newWidth,barHeight);
-
-ctx.fillStyle = fontColor;
-ctx.fillText(text,newWidth/2,image.height + barHeight/2);
-
-} else {
-
-ctx.fillStyle = fontColor;
-ctx.strokeStyle = "rgba(0,0,0,.6)";
-ctx.lineWidth = 3;
-
-const x = newWidth/2;
-const y = newHeight - 40;
-
-ctx.strokeText(text,x,y);
-ctx.fillText(text,x,y);
+if(i===selected){
+ctx.strokeStyle="red";
+ctx.strokeRect(t.x-50,t.y-50,100,100);
 }
-
 });
 }
 
-// تحميل
-function downloadImage(){
+canvas.onmousedown = e=>{
+const rect = canvas.getBoundingClientRect();
+const x = e.clientX - rect.left;
+const y = e.clientY - rect.top;
+
+selected = null;
+
+texts.forEach((t,i)=>{
+if(Math.abs(x - t.x) < 80 && Math.abs(y - t.y) < 40){
+selected = i;
+}
+});
+
+draw();
+};
+
+canvas.onmousemove = e=>{
+if(selected === null) return;
+
+const rect = canvas.getBoundingClientRect();
+texts[selected].x = e.clientX - rect.left;
+texts[selected].y = e.clientY - rect.top;
+
+draw();
+};
+
+document.getElementById("size").oninput = ()=>{
+if(selected !== null){
+texts[selected].size = event.target.value;
+draw();
+}
+};
+
+document.getElementById("color").oninput = ()=>{
+if(selected !== null){
+texts[selected].color = event.target.value;
+draw();
+}
+};
+
+document.getElementById("fontFamily").onchange = ()=>{
+if(selected !== null){
+texts[selected].font = event.target.value;
+draw();
+}
+};
+
+function download(){
 const link = document.createElement("a");
 link.download = "image.png";
-link.href = canvas.toDataURL("image/png",1.0);
+link.href = canvas.toDataURL();
 link.click();
 }
 
-// نسخ
 async function copyImage(){
-canvas.toBlob(async function(blob){
-try{
+canvas.toBlob(async blob=>{
 await navigator.clipboard.write([
 new ClipboardItem({"image/png": blob})
 ]);
-alert("تم النسخ ✅");
-}catch{
-alert("المتصفح لا يسمح بالنسخ");
-}
+alert("تم النسخ");
 });
 }
 
