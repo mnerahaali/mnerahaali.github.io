@@ -2,292 +2,229 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>محرر الصور</title>
+<title>محرر الصور بُصر</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700;800&family=Noto+Sans+Arabic:wght@400;700;900&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&family=Readex+Pro:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 body{
-font-family: "Cairo", Arial, sans-serif;
-background:#f5f5f5;
+font-family:Cairo;
+background:#f4f4f4;
 text-align:center;
-margin:0;
-padding:30px;
+padding:20px;
 }
-h1{margin-bottom:25px;}
 .panel{
 background:white;
-padding:18px;
+padding:20px;
 border-radius:14px;
-max-width:1000px;
+max-width:950px;
 margin:auto;
-box-shadow:0 4px 18px rgba(0,0,0,.08);
+box-shadow:0 4px 15px rgba(0,0,0,.08);
 }
-input, button, select{
+input,select,button{
 margin:6px;
-padding:10px;
+padding:8px;
 border-radius:8px;
-border:1px solid #bbb;
 }
 button{
-background:#111;
+background:black;
 color:white;
 cursor:pointer;
 }
 canvas{
 margin-top:20px;
 max-width:95%;
-background:white;
 border-radius:12px;
 }
-.small{font-size:13px;color:#666;}
 </style>
 </head>
 
 <body>
 
-<h1>✨ محرر الصور</h1>
+<h1>✨ محرر الصور بُصر</h1>
 
 <div class="panel">
 
-<input type="file" id="upload" accept="image/*">
-
-<br><br>
-
-<input type="number" id="width" placeholder="العرض">
-<input type="number" id="height" placeholder="الارتفاع">
-<button onclick="resizeImage()">تغيير المقاس بجودة عالية</button>
+<input type="file" id="imgUpload">
 
 <br>
 
-<button onclick="rotateImage()">تدوير 90°</button>
-<button onclick="resetImage()">استعادة الأصل</button>
+<input type="number" id="w" placeholder="عرض">
+<input type="number" id="h" placeholder="ارتفاع">
+<button onclick="resizeImg()">تغيير المقاس</button>
 
-<br><br>
+<br>
 
-<input type="text" id="captionText" placeholder="اكتبي النص هنا">
+<button onclick="rotate()">تدوير</button>
+<button onclick="reset()">استعادة</button>
 
-<label>حجم الخط:</label>
-<input type="number" id="fontSize" value="34">
+<hr>
 
-<label>نوع الخط:</label>
-<select id="fontFamily">
+<h3>✍️ نص على الصورة</h3>
+<input id="textTop" placeholder="النص على الصورة">
+<input type="color" id="colorTop">
+<select id="fontTop">
 <option value="Cairo">Cairo</option>
 <option value="Tajawal">Tajawal</option>
 <option value="Almarai">Almarai</option>
-<option value="'Noto Sans Arabic'">Noto Sans Arabic</option>
-<option value="'IBM Plex Sans Arabic'">IBM Plex Sans Arabic</option>
-<option value="'Readex Pro'">Readex Pro</option>
-<option value="Amiri">Amiri</option>
-<option value="Arial">Arial</option>
-<option value="Tahoma">Tahoma</option>
 </select>
+<input type="number" id="sizeTop" value="40">
+<button onclick="drawText()">إضافة</button>
 
-<label>النمط:</label>
-<select id="fontWeight">
-<option value="700">Bold</option>
-<option value="400">عادي</option>
-<option value="900">ثقيل</option>
-</select>
+<hr>
 
-<label>لون الخط:</label>
-<input type="color" id="fontColor" value="#111111">
-
-<br>
-
-<label>لون الشريط:</label>
+<h3>🧾 شريط سفلي</h3>
+<input id="textBar" placeholder="نص الشريط">
 <input type="color" id="barColor" value="#ffffff">
+<input type="number" id="barH" value="80">
+<button onclick="drawBar()">إضافة</button>
 
-<label>ارتفاع الشريط:</label>
-<input type="number" id="barHeight" value="90" min="30">
+<hr>
 
-<select id="barOption">
-<option value="yes">إضافة شريط أسفل الصورة</option>
-<option value="no">بدون شريط</option>
+<h3>🎨 طبقة شفافة</h3>
+<input type="color" id="overlayColor">
+<input type="range" id="opacity" min="0" max="1" step="0.1" value="0.3">
+<select id="overlayPos">
+<option value="top">أعلى</option>
+<option value="center">وسط</option>
+<option value="bottom">أسفل</option>
 </select>
+<button onclick="overlay()">تطبيق</button>
 
-<br>
+<hr>
 
-<button onclick="addCaption()">إضافة النص</button>
+<h3>🖼️ شعار</h3>
+<input type="file" id="logoUpload">
+<select id="logoPos">
+<option value="right">يمين</option>
+<option value="left">يسار</option>
+</select>
+<input type="number" id="logoSize" value="120">
+<button onclick="addLogo()">إضافة شعار</button>
 
-<br><br>
+<hr>
 
-<button onclick="copyImage()">نسخ الصورة</button>
-<button onclick="downloadImage()">تحميل الصورة</button>
-
-<p class="small">لأفضل جودة: صغّري الصورة بدل تكبيرها، وتجنّبي تغيير المقاس أكثر من مرة.</p>
+<button onclick="download()">تحميل</button>
+<button onclick="copyImg()">نسخ</button>
 
 </div>
 
-<canvas id="canvas"></canvas>
+<canvas id="c"></canvas>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d");
+let img=new Image();
 
-let originalImage = new Image();
+function HQ(){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";}
 
-function enableHighQuality(context){
-context.imageSmoothingEnabled = true;
-context.imageSmoothingQuality = "high";
+document.getElementById("imgUpload").onchange=e=>{
+const f=e.target.files[0];
+const r=new FileReader();
+r.onload=ev=>{
+img.onload=()=>{
+canvas.width=img.width;
+canvas.height=img.height;
+HQ();
+ctx.drawImage(img,0,0);
+document.getElementById("w").value=img.width;
+document.getElementById("h").value=img.height;
+}
+img.src=ev.target.result;
+}
+r.readAsDataURL(f);
 }
 
-function drawImageHighQuality(image, width, height){
-canvas.width = width;
-canvas.height = height;
-
-enableHighQuality(ctx);
-ctx.clearRect(0,0,width,height);
-ctx.drawImage(image,0,0,width,height);
+function resizeImg(){
+let w=+wInput.value,h=+hInput.value;
+let t=new Image();
+t.onload=()=>{
+canvas.width=w;canvas.height=h;
+HQ();ctx.drawImage(t,0,0,w,h);
+}
+t.src=canvas.toDataURL();
 }
 
-document.getElementById("upload").addEventListener("change", function(e){
-const file = e.target.files[0];
-if(!file) return;
+function rotate(){
+let t=document.createElement("canvas");
+let x=t.getContext("2d");
+t.width=canvas.height;
+t.height=canvas.width;
+x.translate(t.width/2,t.height/2);
+x.rotate(Math.PI/2);
+x.drawImage(canvas,-canvas.width/2,-canvas.height/2);
+canvas.width=t.width;canvas.height=t.height;
+ctx.drawImage(t,0,0);
+}
 
-const reader = new FileReader();
+function reset(){
+canvas.width=img.width;
+canvas.height=img.height;
+ctx.drawImage(img,0,0);
+}
 
-reader.onload = function(event){
-originalImage = new Image();
+function drawText(){
+ctx.fillStyle=colorTop.value;
+ctx.font=`bold ${sizeTop.value}px ${fontTop.value}`;
+ctx.textAlign="center";
+ctx.fillText(textTop.value,canvas.width/2,canvas.height/2);
+}
 
-originalImage.onload = function(){
-drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
-document.getElementById("width").value = originalImage.width;
-document.getElementById("height").value = originalImage.height;
-};
+function drawBar(){
+let h=+barH.value;
+let t=new Image();
+t.onload=()=>{
+canvas.height=t.height+h;
+canvas.width=t.width;
+ctx.fillStyle=barColor.value;
+ctx.fillRect(0,t.height,t.width,h);
+ctx.drawImage(t,0,0);
+ctx.fillStyle="#000";
+ctx.textAlign="center";
+ctx.fillText(textBar.value,t.width/2,t.height+h/2);
+}
+t.src=canvas.toDataURL();
+}
 
-originalImage.src = event.target.result;
-};
+function overlay(){
+let col=overlayColor.value;
+let op=opacity.value;
+ctx.fillStyle=col;
+ctx.globalAlpha=op;
+let y=0;
+if(overlayPos.value=="center") y=canvas.height/3;
+if(overlayPos.value=="bottom") y=canvas.height*2/3;
+ctx.fillRect(0,y,canvas.width,canvas.height/3);
+ctx.globalAlpha=1;
+}
 
-reader.readAsDataURL(file);
+function addLogo(){
+let f=logoUpload.files[0];
+let r=new FileReader();
+r.onload=e=>{
+let l=new Image();
+l.onload=()=>{
+let s=logoSize.value;
+let x=logoPos.value=="right"?canvas.width-s-10:10;
+ctx.drawImage(l,x,10,s,s);
+}
+l.src=e.target.result;
+}
+r.readAsDataURL(f);
+}
+
+function download(){
+let a=document.createElement("a");
+a.href=canvas.toDataURL("image/png");
+a.download="busr.png";
+a.click();
+}
+
+function copyImg(){
+canvas.toBlob(b=>{
+navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
+alert("تم النسخ");
 });
-
-function getCanvasAsImage(callback){
-const img = new Image();
-img.onload = () => callback(img);
-img.src = canvas.toDataURL("image/png",1.0);
-}
-
-function resizeImage(){
-const w = Number(document.getElementById("width").value);
-const h = Number(document.getElementById("height").value);
-
-if(!w || !h){
-alert("اكتبي العرض والارتفاع");
-return;
-}
-
-getCanvasAsImage(function(image){
-drawImageHighQuality(image,w,h);
-});
-}
-
-function rotateImage(){
-const temp = document.createElement("canvas");
-const tctx = temp.getContext("2d");
-
-temp.width = canvas.height;
-temp.height = canvas.width;
-
-enableHighQuality(tctx);
-tctx.translate(temp.width/2,temp.height/2);
-tctx.rotate(Math.PI/2);
-tctx.drawImage(canvas,-canvas.width/2,-canvas.height/2);
-
-canvas.width = temp.width;
-canvas.height = temp.height;
-
-enableHighQuality(ctx);
-ctx.drawImage(temp,0,0);
-
-document.getElementById("width").value = canvas.width;
-document.getElementById("height").value = canvas.height;
-}
-
-function resetImage(){
-if(!originalImage.src){
-alert("ارفعي صورة أولًا");
-return;
-}
-
-drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
-document.getElementById("width").value = originalImage.width;
-document.getElementById("height").value = originalImage.height;
-}
-
-function addCaption(){
-const text = document.getElementById("captionText").value.trim();
-if(!text){
-alert("اكتبي النص");
-return;
-}
-
-const fontSize = Number(document.getElementById("fontSize").value) || 34;
-const fontFamily = document.getElementById("fontFamily").value;
-const fontWeight = document.getElementById("fontWeight").value;
-const fontColor = document.getElementById("fontColor").value;
-
-const addBar = document.getElementById("barOption").value === "yes";
-const barColor = document.getElementById("barColor").value;
-const barHeight = addBar ? Number(document.getElementById("barHeight").value || 90) : 0;
-
-getCanvasAsImage(function(image){
-const newWidth = image.width;
-const newHeight = image.height + barHeight;
-
-canvas.width = newWidth;
-canvas.height = newHeight;
-
-enableHighQuality(ctx);
-
-ctx.fillStyle = "white";
-ctx.fillRect(0,0,newWidth,newHeight);
-
-ctx.drawImage(image,0,0);
-
-ctx.textBaseline = "middle";
-ctx.textAlign = "center";
-ctx.direction = "rtl";
-ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-
-if(addBar){
-ctx.fillStyle = barColor;
-ctx.fillRect(0,image.height,newWidth,barHeight);
-
-ctx.fillStyle = fontColor;
-ctx.fillText(text,newWidth/2,image.height + barHeight/2);
-} else {
-ctx.fillStyle = fontColor;
-ctx.strokeStyle = "rgba(0,0,0,.55)";
-ctx.lineWidth = Math.max(2, fontSize/14);
-
-const x = newWidth/2;
-const y = newHeight - 40;
-
-ctx.strokeText(text,x,y);
-ctx.fillText(text,x,y);
-}
-});
-}
-
-function downloadImage(){
-const link = document.createElement("a");
-link.download = "edited-image.png";
-link.href = canvas.toDataURL("image/png",1.0);
-link.click();
-}
-
-async function copyImage(){
-canvas.toBlob(async function(blob){
-try{
-await navigator.clipboard.write([
-new ClipboardItem({"image/png": blob})
-]);
-alert("تم نسخ الصورة ✅");
-}catch(e){
-alert("المتصفح لم يسمح بالنسخ. استخدمي زر التحميل.");
-}
-}, "image/png", 1.0);
 }
 </script>
 
