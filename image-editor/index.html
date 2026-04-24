@@ -9,44 +9,93 @@
 <style>
 body{
 font-family:"Cairo",Arial,sans-serif;
-background:#f5f5f5;
-text-align:center;
+background:#f3f4f6;
 margin:0;
 padding:25px;
+text-align:center;
+color:#111827;
 }
-h1{margin-bottom:20px;}
+
+h1{
+margin:10px 0 20px;
+font-size:34px;
+}
+
 .panel{
-background:#fff;
-padding:18px;
-border-radius:16px;
-max-width:1100px;
+background:white;
+max-width:1150px;
 margin:auto;
-box-shadow:0 4px 18px rgba(0,0,0,.08);
+padding:22px;
+border-radius:20px;
+box-shadow:0 8px 28px rgba(0,0,0,.08);
 }
-.section{
-border-top:1px solid #eee;
-padding-top:12px;
-margin-top:12px;
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:14px;
+text-align:right;
 }
+
+.card{
+border:1px solid #e5e7eb;
+border-radius:16px;
+padding:15px;
+background:#fafafa;
+}
+
+.card h3{
+margin-top:0;
+font-size:18px;
+}
+
 input,select,button{
 margin:5px;
 padding:9px;
-border-radius:8px;
-border:1px solid #bbb;
+border-radius:10px;
+border:1px solid #cbd5e1;
+font-family:inherit;
 }
+
 button{
-background:#111;
-color:#fff;
+background:#111827;
+color:white;
 cursor:pointer;
+border:none;
+font-weight:700;
 }
+
+button.secondary{
+background:#475569;
+}
+
+button.danger{
+background:#991b1b;
+}
+
+button.soft{
+background:#e5e7eb;
+color:#111827;
+}
+
 canvas{
-margin-top:20px;
-max-width:95%;
+margin-top:25px;
+max-width:96%;
 background:white;
-border-radius:12px;
+border-radius:18px;
+box-shadow:0 6px 22px rgba(0,0,0,.12);
 cursor:grab;
 }
-.small{font-size:13px;color:#666;}
+
+.note{
+color:#64748b;
+font-size:13px;
+margin-top:10px;
+}
+
+.row{
+margin:8px 0;
+}
 </style>
 </head>
 
@@ -56,59 +105,68 @@ cursor:grab;
 
 <div class="panel">
 
+<div class="grid">
+
+<div class="card">
+<h3>① الصورة الأساسية</h3>
 <input type="file" id="imageUpload" accept="image/*">
-
-<br>
-
+<div class="row">
 <input type="number" id="canvasWidth" placeholder="العرض">
 <input type="number" id="canvasHeight" placeholder="الارتفاع">
+</div>
 <button onclick="resizeCanvasImage()">تغيير المقاس بجودة عالية</button>
 <button onclick="rotateImage()">تدوير 90°</button>
-<button onclick="resetAll()">استعادة الأصل</button>
+<button onclick="resetAll()" class="secondary">استعادة الأصل</button>
+</div>
 
-<div class="section">
-<h3>🖼️ الشعار</h3>
+<div class="card">
+<h3>② الشعار</h3>
 <input type="file" id="logoUpload" accept="image/*">
+<div class="row">
 <label>عرض الشعار:</label>
 <input type="number" id="logoWidth" value="170">
+</div>
+<div class="row">
 <label>الهامش:</label>
-<input type="number" id="logoMargin" value="40">
-
+<input type="number" id="logoMargin" value="24">
+</div>
 <select id="logoPosition">
 <option value="top-right">أعلى يمين</option>
 <option value="top-left">أعلى يسار</option>
+<option value="top-center">أعلى المنتصف</option>
 <option value="bottom-right">أسفل يمين</option>
 <option value="bottom-left">أسفل يسار</option>
 <option value="center">وسط</option>
 </select>
-
 <button onclick="addLogo()">إضافة الشعار</button>
+<button onclick="centerSelected()" class="soft">توسيط المحدد</button>
 </div>
 
-<div class="section">
-<h3>🎨 طبقة شفافة</h3>
+<div class="card">
+<h3>③ طبقة شفافة</h3>
 <label>لون:</label>
 <input type="color" id="overlayColor" value="#000000">
 <label>شفافية:</label>
 <input type="range" id="overlayOpacity" min="0" max="1" step="0.05" value="0.30">
+<div class="row">
 <label>الارتفاع:</label>
 <input type="number" id="overlayHeight" value="180">
-
+</div>
 <select id="overlayPosition">
 <option value="top">أعلى</option>
 <option value="center">وسط</option>
 <option value="bottom">أسفل</option>
 </select>
-
 <button onclick="addOverlay()">إضافة طبقة</button>
 </div>
 
-<div class="section">
-<h3>✍️ نص على الصورة</h3>
+<div class="card">
+<h3>④ نص على الصورة</h3>
 <input type="text" id="imageText" placeholder="اكتبي النص هنا">
+<div class="row">
 <label>حجم:</label>
 <input type="number" id="imageTextSize" value="46">
-
+</div>
 <select id="imageTextFont">
 <option value="Cairo">Cairo</option>
 <option value="Tajawal">Tajawal</option>
@@ -120,34 +178,33 @@ cursor:grab;
 <option value="Arial">Arial</option>
 <option value="Tahoma">Tahoma</option>
 </select>
-
 <select id="imageTextWeight">
 <option value="700">Bold</option>
 <option value="400">عادي</option>
 <option value="900">ثقيل</option>
 </select>
-
 <label>لون:</label>
 <input type="color" id="imageTextColor" value="#ffffff">
 <label>ظل:</label>
 <input type="checkbox" id="imageTextShadow" checked>
-
 <button onclick="addImageText()">إضافة نص على الصورة</button>
 </div>
 
-<div class="section">
-<h3>🧾 الشريط السفلي</h3>
+<div class="card">
+<h3>⑤ الشريط السفلي</h3>
 <input type="text" id="barText" placeholder="نص الشريط">
+<div class="row">
 <label>لون الشريط:</label>
 <input type="color" id="barColor" value="#ffffff">
-<label>ارتفاع الشريط:</label>
+<label>ارتفاع:</label>
 <input type="number" id="barHeight" value="95">
-
-<label>حجم خط الشريط:</label>
+</div>
+<div class="row">
+<label>حجم الخط:</label>
 <input type="number" id="barTextSize" value="34">
-<label>لون خط الشريط:</label>
+<label>لون الخط:</label>
 <input type="color" id="barTextColor" value="#111111">
-
+</div>
 <select id="barTextFont">
 <option value="Cairo">Cairo</option>
 <option value="Tajawal">Tajawal</option>
@@ -159,21 +216,24 @@ cursor:grab;
 <option value="Arial">Arial</option>
 <option value="Tahoma">Tahoma</option>
 </select>
-
 <select id="barTextWeight">
 <option value="700">Bold</option>
 <option value="400">عادي</option>
 <option value="900">ثقيل</option>
 </select>
-
 <button onclick="addBottomBar()">إضافة الشريط</button>
 </div>
 
-<div class="section">
-<button onclick="deleteSelected()">حذف العنصر المحدد</button>
+<div class="card">
+<h3>⑥ التحكم والتصدير</h3>
+<button onclick="undo()" class="secondary">↩️ تراجع عن آخر خطوة</button>
+<button onclick="deleteSelected()" class="danger">حذف العنصر المحدد</button>
+<br>
 <button onclick="downloadImage()">تحميل الصورة</button>
 <button onclick="copyImage()">نسخ الصورة</button>
-<p class="small">يمكنك سحب النص أو الشعار بالماوس بعد إضافته. الشعار يُحافظ على نسبته الأصلية ولا يلتصق بالحواف.</p>
+<p class="note">يمكنك سحب النص أو الشعار بالماوس بعد إضافته. التراجع يحفظك من أي خطوة غير مناسبة.</p>
+</div>
+
 </div>
 
 </div>
@@ -188,9 +248,31 @@ let baseImage = null;
 let originalImage = null;
 let layers = [];
 let selectedLayer = null;
+let history = [];
+
 let isDragging = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
+
+function saveHistory(){
+history.push({
+width: canvas.width,
+height: canvas.height,
+layers: layers.slice()
+});
+if(history.length > 30) history.shift();
+}
+
+function undo(){
+if(history.length === 0) return alert("لا توجد خطوة للتراجع");
+
+const last = history.pop();
+canvas.width = last.width;
+canvas.height = last.height;
+layers = last.layers.slice();
+selectedLayer = null;
+render();
+}
 
 function highQuality(context){
 context.imageSmoothingEnabled = true;
@@ -203,161 +285,257 @@ if(!baseImage) return;
 highQuality(ctx);
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-ctx.fillStyle = "#ffffff";
+ctx.fillStyle="#fff";
 ctx.fillRect(0,0,canvas.width,canvas.height);
 
 ctx.drawImage(baseImage,0,0,canvas.width,canvas.height);
 
 layers.forEach(layer=>{
-if(layer.type === "overlay"){
+
+if(layer.type==="overlay"){
 ctx.save();
-ctx.globalAlpha = layer.opacity;
-ctx.fillStyle = layer.color;
-ctx.fillRect(layer.x, layer.y, layer.w, layer.h);
+ctx.globalAlpha=layer.opacity;
+ctx.fillStyle=layer.color;
+ctx.fillRect(layer.x,layer.y,layer.w,layer.h);
 ctx.restore();
 }
 
-if(layer.type === "bar"){
-ctx.fillStyle = layer.color;
-ctx.fillRect(0, canvas.height - layer.h, canvas.width, layer.h);
+if(layer.type==="bar"){
+ctx.fillStyle=layer.color;
+ctx.fillRect(0,canvas.height-layer.h,canvas.width,layer.h);
 
-ctx.fillStyle = layer.textColor;
-ctx.font = `${layer.weight} ${layer.fontSize}px ${layer.font}`;
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.direction = "rtl";
-ctx.fillText(layer.text, canvas.width/2, canvas.height - layer.h/2);
+ctx.fillStyle=layer.textColor;
+ctx.font=`${layer.weight} ${layer.fontSize}px ${layer.font}`;
+ctx.textAlign="center";
+ctx.textBaseline="middle";
+ctx.direction="rtl";
+ctx.fillText(layer.text,canvas.width/2,canvas.height-layer.h/2);
 }
 
-if(layer.type === "text"){
+if(layer.type==="text"){
 ctx.save();
-ctx.font = `${layer.weight} ${layer.size}px ${layer.font}`;
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.direction = "rtl";
+ctx.font=`${layer.weight} ${layer.size}px ${layer.font}`;
+ctx.textAlign="center";
+ctx.textBaseline="middle";
+ctx.direction="rtl";
 
 if(layer.shadow){
-ctx.strokeStyle = "rgba(0,0,0,.65)";
-ctx.lineWidth = Math.max(3, layer.size / 12);
-ctx.strokeText(layer.text, layer.x, layer.y);
+ctx.strokeStyle="rgba(0,0,0,.65)";
+ctx.lineWidth=Math.max(3,layer.size/12);
+ctx.strokeText(layer.text,layer.x,layer.y);
 }
 
-ctx.fillStyle = layer.color;
-ctx.fillText(layer.text, layer.x, layer.y);
+ctx.fillStyle=layer.color;
+ctx.fillText(layer.text,layer.x,layer.y);
 ctx.restore();
 }
 
-if(layer.type === "logo"){
+if(layer.type==="logo"){
 highQuality(ctx);
-ctx.drawImage(layer.img, layer.x, layer.y, layer.w, layer.h);
+ctx.drawImage(layer.img,layer.x,layer.y,layer.w,layer.h);
 }
 
-if(layer === selectedLayer){
+if(layer===selectedLayer){
 ctx.save();
-ctx.strokeStyle = "#00AEEF";
-ctx.lineWidth = 3;
+ctx.strokeStyle="#0284c7";
+ctx.lineWidth=3;
 ctx.setLineDash([8,6]);
-ctx.strokeRect(layer.x - 6, layer.y - 6, layer.w + 12, layer.h + 12);
+
+if(layer.type==="text"){
+ctx.strokeRect(layer.x-layer.w/2-8,layer.y-layer.h/2-8,layer.w+16,layer.h+16);
+}else{
+ctx.strokeRect(layer.x-8,layer.y-8,layer.w+16,layer.h+16);
+}
+
 ctx.restore();
 }
 });
 }
 
-document.getElementById("imageUpload").addEventListener("change", e=>{
-const file = e.target.files[0];
+imageUpload.addEventListener("change", e=>{
+const file=e.target.files[0];
 if(!file) return;
 
-const reader = new FileReader();
-reader.onload = ev=>{
-const img = new Image();
-img.onload = ()=>{
-originalImage = img;
-baseImage = img;
-canvas.width = img.width;
-canvas.height = img.height;
-document.getElementById("canvasWidth").value = img.width;
-document.getElementById("canvasHeight").value = img.height;
-layers = [];
-selectedLayer = null;
+const reader=new FileReader();
+reader.onload=ev=>{
+const img=new Image();
+img.onload=()=>{
+originalImage=img;
+baseImage=img;
+canvas.width=img.width;
+canvas.height=img.height;
+canvasWidth.value=img.width;
+canvasHeight.value=img.height;
+layers=[];
+history=[];
+selectedLayer=null;
 render();
 };
-img.src = ev.target.result;
+img.src=ev.target.result;
 };
 reader.readAsDataURL(file);
 });
 
 function resizeCanvasImage(){
-const w = Number(document.getElementById("canvasWidth").value);
-const h = Number(document.getElementById("canvasHeight").value);
-
+const w=Number(canvasWidth.value);
+const h=Number(canvasHeight.value);
 if(!baseImage || !w || !h) return alert("ارفعي صورة واكتبي المقاسات");
 
-canvas.width = w;
-canvas.height = h;
-
-layers.forEach(layer=>{
-clampLayer(layer);
-});
-
+saveHistory();
+canvas.width=w;
+canvas.height=h;
+layers.forEach(clampLayer);
 render();
 }
 
 function rotateImage(){
 if(!baseImage) return;
+saveHistory();
 
-const temp = document.createElement("canvas");
-const tctx = temp.getContext("2d");
-temp.width = canvas.height;
-temp.height = canvas.width;
+const temp=document.createElement("canvas");
+const tctx=temp.getContext("2d");
+
+temp.width=canvas.height;
+temp.height=canvas.width;
 
 highQuality(tctx);
-tctx.translate(temp.width/2, temp.height/2);
+tctx.translate(temp.width/2,temp.height/2);
 tctx.rotate(Math.PI/2);
-tctx.drawImage(canvas, -canvas.width/2, -canvas.height/2);
+tctx.drawImage(canvas,-canvas.width/2,-canvas.height/2);
 
-const img = new Image();
-img.onload = ()=>{
-baseImage = img;
-canvas.width = img.width;
-canvas.height = img.height;
-layers = [];
-selectedLayer = null;
-document.getElementById("canvasWidth").value = canvas.width;
-document.getElementById("canvasHeight").value = canvas.height;
+const img=new Image();
+img.onload=()=>{
+baseImage=img;
+canvas.width=img.width;
+canvas.height=img.height;
+layers=[];
+selectedLayer=null;
+canvasWidth.value=canvas.width;
+canvasHeight.value=canvas.height;
 render();
 };
-img.src = temp.toDataURL("image/png",1);
+img.src=temp.toDataURL("image/png",1);
 }
 
 function resetAll(){
 if(!originalImage) return;
-baseImage = originalImage;
-canvas.width = originalImage.width;
-canvas.height = originalImage.height;
-document.getElementById("canvasWidth").value = canvas.width;
-document.getElementById("canvasHeight").value = canvas.height;
-layers = [];
-selectedLayer = null;
+saveHistory();
+baseImage=originalImage;
+canvas.width=originalImage.width;
+canvas.height=originalImage.height;
+canvasWidth.value=canvas.width;
+canvasHeight.value=canvas.height;
+layers=[];
+selectedLayer=null;
+render();
+}
+
+function addLogo(){
+const file=logoUpload.files[0];
+if(!file) return alert("ارفعي الشعار أولًا");
+
+saveHistory();
+
+const reader=new FileReader();
+reader.onload=ev=>{
+const logo=new Image();
+logo.onload=()=>{
+const margin=Number(logoMargin.value)||24;
+const logoW=Number(logoWidth.value)||170;
+const ratio=logo.height/logo.width;
+const logoH=logoW*ratio;
+const pos=logoPosition.value;
+
+let x=margin;
+let y=margin;
+
+if(pos==="top-right"){x=canvas.width-logoW-margin;y=margin;}
+if(pos==="top-left"){x=margin;y=margin;}
+if(pos==="top-center"){x=(canvas.width-logoW)/2;y=margin;}
+if(pos==="bottom-right"){x=canvas.width-logoW-margin;y=canvas.height-logoH-margin;}
+if(pos==="bottom-left"){x=margin;y=canvas.height-logoH-margin;}
+if(pos==="center"){x=(canvas.width-logoW)/2;y=(canvas.height-logoH)/2;}
+
+const layer={type:"logo",img:logo,x,y,w:logoW,h:logoH};
+clampLayer(layer);
+layers.push(layer);
+selectedLayer=layer;
+render();
+};
+logo.src=ev.target.result;
+};
+reader.readAsDataURL(file);
+}
+
+function addOverlay(){
+saveHistory();
+
+const h=Number(overlayHeight.value)||180;
+let y=0;
+
+if(overlayPosition.value==="center") y=(canvas.height-h)/2;
+if(overlayPosition.value==="bottom") y=canvas.height-h;
+
+layers.push({
+type:"overlay",
+x:0,
+y,
+w:canvas.width,
+h,
+color:overlayColor.value,
+opacity:Number(overlayOpacity.value)
+});
+
+render();
+}
+
+function addImageText(){
+const text=imageText.value.trim();
+if(!text) return alert("اكتبي النص");
+
+saveHistory();
+
+const size=Number(imageTextSize.value)||46;
+const w=Math.max(180,text.length*size*.75);
+const h=size*1.6;
+
+const layer={
+type:"text",
+text,
+x:canvas.width/2,
+y:canvas.height/2,
+w,
+h,
+size,
+color:imageTextColor.value,
+font:imageTextFont.value,
+weight:imageTextWeight.value,
+shadow:imageTextShadow.checked
+};
+
+layers.push(layer);
+selectedLayer=layer;
 render();
 }
 
 function addBottomBar(){
-const text = document.getElementById("barText").value.trim();
+const text=barText.value.trim();
 if(!text) return alert("اكتبي نص الشريط");
 
-const h = Number(document.getElementById("barHeight").value) || 95;
+saveHistory();
 
-layers = layers.filter(l => l.type !== "bar");
+const h=Number(barHeight.value)||95;
+layers=layers.filter(l=>l.type!=="bar");
 
 layers.push({
 type:"bar",
-h:h,
-color:document.getElementById("barColor").value,
-text:text,
-textColor:document.getElementById("barTextColor").value,
-fontSize:Number(document.getElementById("barTextSize").value) || 34,
-font:document.getElementById("barTextFont").value,
-weight:document.getElementById("barTextWeight").value,
+h,
+color:barColor.value,
+text,
+textColor:barTextColor.value,
+fontSize:Number(barTextSize.value)||34,
+font:barTextFont.value,
+weight:barTextWeight.value,
 x:0,
 y:canvas.height-h,
 w:canvas.width
@@ -366,204 +544,125 @@ w:canvas.width
 render();
 }
 
-function addOverlay(){
-const h = Number(document.getElementById("overlayHeight").value) || 180;
-let y = 0;
+function centerSelected(){
+if(!selectedLayer) return;
 
-if(document.getElementById("overlayPosition").value === "center"){
-y = (canvas.height - h)/2;
+saveHistory();
+
+if(selectedLayer.type==="logo"){
+selectedLayer.x=(canvas.width-selectedLayer.w)/2;
+selectedLayer.y=(canvas.height-selectedLayer.h)/2;
 }
 
-if(document.getElementById("overlayPosition").value === "bottom"){
-y = canvas.height - h;
+if(selectedLayer.type==="text"){
+selectedLayer.x=canvas.width/2;
+selectedLayer.y=canvas.height/2;
 }
-
-layers.push({
-type:"overlay",
-x:0,
-y:y,
-w:canvas.width,
-h:h,
-color:document.getElementById("overlayColor").value,
-opacity:Number(document.getElementById("overlayOpacity").value)
-});
 
 render();
 }
 
-function addImageText(){
-const text = document.getElementById("imageText").value.trim();
-if(!text) return alert("اكتبي النص");
-
-const size = Number(document.getElementById("imageTextSize").value) || 46;
-const w = Math.max(160, text.length * size * 0.65);
-const h = size * 1.5;
-
-const layer = {
-type:"text",
-text:text,
-x:canvas.width/2,
-y:canvas.height/2,
-w:w,
-h:h,
-size:size,
-color:document.getElementById("imageTextColor").value,
-font:document.getElementById("imageTextFont").value,
-weight:document.getElementById("imageTextWeight").value,
-shadow:document.getElementById("imageTextShadow").checked
-};
-
-layers.push(layer);
-selectedLayer = layer;
+function deleteSelected(){
+if(!selectedLayer) return;
+saveHistory();
+layers=layers.filter(l=>l!==selectedLayer);
+selectedLayer=null;
 render();
-}
-
-function addLogo(){
-const file = document.getElementById("logoUpload").files[0];
-if(!file) return alert("ارفعي الشعار أولًا");
-
-const reader = new FileReader();
-reader.onload = ev=>{
-const logo = new Image();
-logo.onload = ()=>{
-const margin = Number(document.getElementById("logoMargin").value) || 40;
-const logoW = Number(document.getElementById("logoWidth").value) || 170;
-const ratio = logo.height / logo.width;
-const logoH = logoW * ratio;
-
-let x = margin;
-let y = margin;
-const pos = document.getElementById("logoPosition").value;
-
-if(pos === "top-right"){ x = canvas.width - logoW - margin; y = margin; }
-if(pos === "top-left"){ x = margin; y = margin; }
-if(pos === "bottom-right"){ x = canvas.width - logoW - margin; y = canvas.height - logoH - margin; }
-if(pos === "bottom-left"){ x = margin; y = canvas.height - logoH - margin; }
-if(pos === "center"){ x = (canvas.width-logoW)/2; y = (canvas.height-logoH)/2; }
-
-const layer = {
-type:"logo",
-img:logo,
-x:x,
-y:y,
-w:logoW,
-h:logoH
-};
-
-clampLayer(layer);
-layers.push(layer);
-selectedLayer = layer;
-render();
-};
-logo.src = ev.target.result;
-};
-reader.readAsDataURL(file);
 }
 
 function clampLayer(layer){
-if(layer.type === "text"){
-const halfW = layer.w / 2;
-const halfH = layer.h / 2;
-layer.x = Math.max(halfW, Math.min(canvas.width - halfW, layer.x));
-layer.y = Math.max(halfH, Math.min(canvas.height - halfH, layer.y));
-} else if(layer.type === "logo"){
-layer.x = Math.max(0, Math.min(canvas.width - layer.w, layer.x));
-layer.y = Math.max(0, Math.min(canvas.height - layer.h, layer.y));
+if(layer.type==="logo"){
+layer.x=Math.max(0,Math.min(canvas.width-layer.w,layer.x));
+layer.y=Math.max(0,Math.min(canvas.height-layer.h,layer.y));
+}
+
+if(layer.type==="text"){
+const halfW=layer.w/2;
+const halfH=layer.h/2;
+layer.x=Math.max(halfW,Math.min(canvas.width-halfW,layer.x));
+layer.y=Math.max(halfH,Math.min(canvas.height-halfH,layer.y));
 }
 }
 
 function getPointer(e){
-const rect = canvas.getBoundingClientRect();
-const scaleX = canvas.width / rect.width;
-const scaleY = canvas.height / rect.height;
+const rect=canvas.getBoundingClientRect();
+const scaleX=canvas.width/rect.width;
+const scaleY=canvas.height/rect.height;
 return {
-x:(e.clientX - rect.left) * scaleX,
-y:(e.clientY - rect.top) * scaleY
+x:(e.clientX-rect.left)*scaleX,
+y:(e.clientY-rect.top)*scaleY
 };
 }
 
-canvas.addEventListener("mousedown", e=>{
-const p = getPointer(e);
-selectedLayer = null;
+canvas.addEventListener("mousedown",e=>{
+const p=getPointer(e);
+selectedLayer=null;
 
-for(let i=layers.length-1; i>=0; i--){
-const l = layers[i];
+for(let i=layers.length-1;i>=0;i--){
+const l=layers[i];
 
-if(l.type === "logo"){
-if(p.x >= l.x && p.x <= l.x+l.w && p.y >= l.y && p.y <= l.y+l.h){
-selectedLayer = l;
-dragOffsetX = p.x - l.x;
-dragOffsetY = p.y - l.y;
-isDragging = true;
+if(l.type==="logo" && p.x>=l.x && p.x<=l.x+l.w && p.y>=l.y && p.y<=l.y+l.h){
+selectedLayer=l;
+dragOffsetX=p.x-l.x;
+dragOffsetY=p.y-l.y;
+isDragging=true;
 break;
 }
-}
 
-if(l.type === "text"){
-if(p.x >= l.x-l.w/2 && p.x <= l.x+l.w/2 && p.y >= l.y-l.h/2 && p.y <= l.y+l.h/2){
-selectedLayer = l;
-dragOffsetX = p.x - l.x;
-dragOffsetY = p.y - l.y;
-isDragging = true;
+if(l.type==="text" && p.x>=l.x-l.w/2 && p.x<=l.x+l.w/2 && p.y>=l.y-l.h/2 && p.y<=l.y+l.h/2){
+selectedLayer=l;
+dragOffsetX=p.x-l.x;
+dragOffsetY=p.y-l.y;
+isDragging=true;
 break;
-}
 }
 }
 
 render();
 });
 
-canvas.addEventListener("mousemove", e=>{
+canvas.addEventListener("mousemove",e=>{
 if(!isDragging || !selectedLayer) return;
 
-const p = getPointer(e);
+const p=getPointer(e);
 
-if(selectedLayer.type === "logo"){
-selectedLayer.x = p.x - dragOffsetX;
-selectedLayer.y = p.y - dragOffsetY;
+if(selectedLayer.type==="logo"){
+selectedLayer.x=p.x-dragOffsetX;
+selectedLayer.y=p.y-dragOffsetY;
 }
 
-if(selectedLayer.type === "text"){
-selectedLayer.x = p.x - dragOffsetX;
-selectedLayer.y = p.y - dragOffsetY;
+if(selectedLayer.type==="text"){
+selectedLayer.x=p.x-dragOffsetX;
+selectedLayer.y=p.y-dragOffsetY;
 }
 
 clampLayer(selectedLayer);
 render();
 });
 
-canvas.addEventListener("mouseup", ()=>{
-isDragging = false;
-});
-
-canvas.addEventListener("mouseleave", ()=>{
-isDragging = false;
-});
-
-function deleteSelected(){
-if(!selectedLayer) return;
-layers = layers.filter(l => l !== selectedLayer);
-selectedLayer = null;
-render();
-}
+canvas.addEventListener("mouseup",()=>isDragging=false);
+canvas.addEventListener("mouseleave",()=>isDragging=false);
 
 function downloadImage(){
+selectedLayer=null;
 render();
-const a = document.createElement("a");
-a.download = "busr-image-editor.png";
-a.href = canvas.toDataURL("image/png",1);
+const a=document.createElement("a");
+a.download="busr-image-editor.png";
+a.href=canvas.toDataURL("image/png",1);
 a.click();
 }
 
 async function copyImage(){
+selectedLayer=null;
 render();
+
 canvas.toBlob(async blob=>{
 try{
 await navigator.clipboard.write([
 new ClipboardItem({"image/png":blob})
 ]);
 alert("تم نسخ الصورة ✅");
-}catch(e){
+}catch{
 alert("المتصفح لم يسمح بالنسخ. استخدمي التحميل.");
 }
 },"image/png",1);
