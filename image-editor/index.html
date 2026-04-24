@@ -13,6 +13,7 @@ margin:0;
 padding:30px;
 }
 h1{margin-bottom:25px;}
+
 .panel{
 background:white;
 padding:18px;
@@ -21,24 +22,31 @@ max-width:950px;
 margin:auto;
 box-shadow:0 4px 18px rgba(0,0,0,.08);
 }
+
 input, button, select{
 margin:6px;
 padding:10px;
 border-radius:8px;
 border:1px solid #bbb;
 }
+
 button{
 background:#111;
 color:white;
 cursor:pointer;
 }
+
 canvas{
 margin-top:20px;
 max-width:95%;
 background:white;
 border-radius:12px;
 }
-.small{font-size:13px;color:#666;}
+
+.small{
+font-size:13px;
+color:#666;
+}
 </style>
 </head>
 
@@ -47,6 +55,7 @@ border-radius:12px;
 <h1>✨ محرر الصور</h1>
 
 <div class="panel">
+
 <input type="file" id="upload" accept="image/*">
 
 <br><br>
@@ -63,7 +72,29 @@ border-radius:12px;
 <br><br>
 
 <input type="text" id="captionText" placeholder="اكتبي النص هنا">
-<input type="number" id="fontSize" value="34" placeholder="حجم الخط">
+
+<label>حجم الخط:</label>
+<input type="number" id="fontSize" value="34">
+
+<label>نوع الخط:</label>
+<select id="fontFamily">
+<option value="Arial">Arial</option>
+<option value="Tahoma">Tahoma</option>
+<option value="Verdana">Verdana</option>
+<option value="Georgia">Georgia</option>
+<option value="'Times New Roman'">Times New Roman</option>
+</select>
+
+<label>النمط:</label>
+<select id="fontWeight">
+<option value="bold">Bold</option>
+<option value="normal">عادي</option>
+</select>
+
+<label>لون الخط:</label>
+<input type="color" id="fontColor" value="#111111">
+
+<br>
 
 <label>لون الشريط:</label>
 <input type="color" id="barColor" value="#ffffff">
@@ -76,6 +107,8 @@ border-radius:12px;
 <option value="no">بدون شريط</option>
 </select>
 
+<br>
+
 <button onclick="addCaption()">إضافة النص</button>
 
 <br><br>
@@ -83,31 +116,36 @@ border-radius:12px;
 <button onclick="copyImage()">نسخ الصورة</button>
 <button onclick="downloadImage()">تحميل الصورة</button>
 
-<p class="small">لأفضل جودة: صغّري الصورة بدل تكبيرها، وتجنّبي تكرار تغيير المقاس أكثر من مرة.</p>
+<p class="small">أفضل جودة تكون عند التصغير وليس التكبير.</p>
+
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 let originalImage = new Image();
 
+// تحسين الجودة
 function enableHighQuality(context){
 context.imageSmoothingEnabled = true;
 context.imageSmoothingQuality = "high";
 }
 
-function drawImageHighQuality(image, width, height) {
+// رسم الصورة
+function drawImageHighQuality(image, width, height){
 canvas.width = width;
 canvas.height = height;
 
 enableHighQuality(ctx);
-ctx.clearRect(0, 0, width, height);
-ctx.drawImage(image, 0, 0, width, height);
+ctx.clearRect(0,0,width,height);
+ctx.drawImage(image,0,0,width,height);
 }
 
+// رفع صورة
 document.getElementById("upload").addEventListener("change", function(e){
 const file = e.target.files[0];
 if(!file) return;
@@ -119,6 +157,7 @@ originalImage = new Image();
 
 originalImage.onload = function(){
 drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
+
 document.getElementById("width").value = originalImage.width;
 document.getElementById("height").value = originalImage.height;
 };
@@ -129,26 +168,29 @@ originalImage.src = event.target.result;
 reader.readAsDataURL(file);
 });
 
+// تحويل الكانفاس إلى صورة
 function getCanvasAsImage(callback){
-const image = new Image();
-image.onload = () => callback(image);
-image.src = canvas.toDataURL("image/png", 1.0);
+const img = new Image();
+img.onload = () => callback(img);
+img.src = canvas.toDataURL("image/png",1.0);
 }
 
+// تغيير المقاس
 function resizeImage(){
 const w = Number(document.getElementById("width").value);
 const h = Number(document.getElementById("height").value);
 
 if(!w || !h){
-alert("اكتبي العرض والارتفاع أولًا");
+alert("اكتبي المقاسات");
 return;
 }
 
 getCanvasAsImage(function(image){
-drawImageHighQuality(image, w, h);
+drawImageHighQuality(image,w,h);
 });
 }
 
+// تدوير
 function rotateImage(){
 const temp = document.createElement("canvas");
 const tctx = temp.getContext("2d");
@@ -158,33 +200,47 @@ temp.height = canvas.width;
 
 enableHighQuality(tctx);
 
-tctx.translate(temp.width / 2, temp.height / 2);
-tctx.rotate(Math.PI / 2);
-tctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+tctx.translate(temp.width/2,temp.height/2);
+tctx.rotate(Math.PI/2);
+tctx.drawImage(canvas,-canvas.width/2,-canvas.height/2);
 
 canvas.width = temp.width;
 canvas.height = temp.height;
 
 enableHighQuality(ctx);
-ctx.drawImage(temp, 0, 0);
-
-document.getElementById("width").value = canvas.width;
-document.getElementById("height").value = canvas.height;
+ctx.drawImage(temp,0,0);
 }
 
+// استعادة الأصل
+function resetImage(){
+if(!originalImage.src) return;
+
+drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
+
+document.getElementById("width").value = originalImage.width;
+document.getElementById("height").value = originalImage.height;
+}
+
+// إضافة نص
 function addCaption(){
+
 const text = document.getElementById("captionText").value.trim();
+if(!text){
+alert("اكتبي النص");
+return;
+}
+
 const fontSize = Number(document.getElementById("fontSize").value) || 34;
+const fontFamily = document.getElementById("fontFamily").value;
+const fontWeight = document.getElementById("fontWeight").value;
+const fontColor = document.getElementById("fontColor").value;
+
 const addBar = document.getElementById("barOption").value === "yes";
 const barColor = document.getElementById("barColor").value;
 const barHeight = addBar ? Number(document.getElementById("barHeight").value || 90) : 0;
 
-if(!text){
-alert("اكتبي النص أولًا");
-return;
-}
-
 getCanvasAsImage(function(image){
+
 const newWidth = image.width;
 const newHeight = image.height + barHeight;
 
@@ -194,68 +250,61 @@ canvas.height = newHeight;
 enableHighQuality(ctx);
 
 ctx.fillStyle = "white";
-ctx.fillRect(0, 0, newWidth, newHeight);
+ctx.fillRect(0,0,newWidth,newHeight);
 
-ctx.drawImage(image, 0, 0);
+ctx.drawImage(image,0,0);
 
-if(addBar){
-ctx.fillStyle = barColor;
-ctx.fillRect(0, image.height, newWidth, barHeight);
-
-ctx.fillStyle = "#111";
 ctx.textBaseline = "middle";
 ctx.textAlign = "center";
 ctx.direction = "rtl";
-ctx.font = `bold ${fontSize}px Arial`;
-ctx.fillText(text, newWidth / 2, image.height + barHeight / 2);
+ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+if(addBar){
+
+ctx.fillStyle = barColor;
+ctx.fillRect(0,image.height,newWidth,barHeight);
+
+ctx.fillStyle = fontColor;
+ctx.fillText(text,newWidth/2,image.height + barHeight/2);
+
 } else {
-ctx.fillStyle = "white";
-ctx.strokeStyle = "rgba(0,0,0,.75)";
-ctx.lineWidth = Math.max(3, fontSize / 12);
-ctx.textBaseline = "bottom";
-ctx.textAlign = "center";
-ctx.direction = "rtl";
-ctx.font = `bold ${fontSize}px Arial`;
 
-const x = newWidth / 2;
-const y = newHeight - 25;
+ctx.fillStyle = fontColor;
+ctx.strokeStyle = "rgba(0,0,0,.6)";
+ctx.lineWidth = 3;
 
-ctx.strokeText(text, x, y);
-ctx.fillText(text, x, y);
+const x = newWidth/2;
+const y = newHeight - 40;
+
+ctx.strokeText(text,x,y);
+ctx.fillText(text,x,y);
 }
+
 });
 }
 
-function resetImage(){
-if(!originalImage.src){
-alert("ارفعي صورة أولًا");
-return;
-}
-
-drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
-document.getElementById("width").value = originalImage.width;
-document.getElementById("height").value = originalImage.height;
-}
-
+// تحميل
 function downloadImage(){
 const link = document.createElement("a");
-link.download = "edited-image.png";
-link.href = canvas.toDataURL("image/png", 1.0);
+link.download = "image.png";
+link.href = canvas.toDataURL("image/png",1.0);
 link.click();
 }
 
+// نسخ
 async function copyImage(){
 canvas.toBlob(async function(blob){
 try{
 await navigator.clipboard.write([
-new ClipboardItem({ "image/png": blob })
+new ClipboardItem({"image/png": blob})
 ]);
-alert("تم نسخ الصورة ✅");
-}catch(e){
-alert("المتصفح لم يسمح بالنسخ. استخدمي زر التحميل بدلًا منه.");
+alert("تم النسخ ✅");
+}catch{
+alert("المتصفح لا يسمح بالنسخ");
 }
-}, "image/png", 1.0);
+});
 }
+
 </script>
 
 </body>
