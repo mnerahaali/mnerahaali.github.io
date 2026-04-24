@@ -4,14 +4,49 @@
 <meta charset="UTF-8">
 <title>محرر الصور بُصر</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&family=Readex+Pro:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700;800&family=Noto+Sans+Arabic:wght@400;700;900&family=IBM+Plex+Sans+Arabic:wght@400;700&family=Readex+Pro:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-body{font-family:Cairo;background:#f5f5f5;text-align:center;padding:20px;}
-.panel{background:white;padding:20px;border-radius:14px;max-width:950px;margin:auto;box-shadow:0 4px 15px rgba(0,0,0,.08);}
-input,select,button{margin:6px;padding:8px;border-radius:8px;}
-button{background:black;color:white;cursor:pointer;}
-canvas{margin-top:20px;max-width:95%;border-radius:12px;}
+body{
+font-family:"Cairo",Arial,sans-serif;
+background:#f5f5f5;
+text-align:center;
+margin:0;
+padding:25px;
+}
+h1{margin-bottom:20px;}
+.panel{
+background:#fff;
+padding:18px;
+border-radius:16px;
+max-width:1100px;
+margin:auto;
+box-shadow:0 4px 18px rgba(0,0,0,.08);
+}
+.section{
+border-top:1px solid #eee;
+padding-top:12px;
+margin-top:12px;
+}
+input,select,button{
+margin:5px;
+padding:9px;
+border-radius:8px;
+border:1px solid #bbb;
+}
+button{
+background:#111;
+color:#fff;
+cursor:pointer;
+}
+canvas{
+margin-top:20px;
+max-width:95%;
+background:white;
+border-radius:12px;
+cursor:grab;
+}
+.small{font-size:13px;color:#666;}
 </style>
 </head>
 
@@ -21,229 +56,517 @@ canvas{margin-top:20px;max-width:95%;border-radius:12px;}
 
 <div class="panel">
 
-<input type="file" id="imgUpload">
+<input type="file" id="imageUpload" accept="image/*">
 
 <br>
 
-<input type="number" id="w" placeholder="عرض">
-<input type="number" id="h" placeholder="ارتفاع">
-<button onclick="resizeImg()">تغيير المقاس</button>
+<input type="number" id="canvasWidth" placeholder="العرض">
+<input type="number" id="canvasHeight" placeholder="الارتفاع">
+<button onclick="resizeCanvasImage()">تغيير المقاس بجودة عالية</button>
+<button onclick="rotateImage()">تدوير 90°</button>
+<button onclick="resetAll()">استعادة الأصل</button>
 
-<br>
+<div class="section">
+<h3>🖼️ الشعار</h3>
+<input type="file" id="logoUpload" accept="image/*">
+<label>عرض الشعار:</label>
+<input type="number" id="logoWidth" value="170">
+<label>الهامش:</label>
+<input type="number" id="logoMargin" value="40">
 
-<button onclick="rotate()">تدوير</button>
-<button onclick="reset()">استعادة</button>
-
-<hr>
-
-<h3>✍️ نص على الصورة</h3>
-<input id="textTop" placeholder="النص">
-<input type="color" id="colorTop" value="#000000">
-<select id="fontTop">
-<option>Cairo</option>
-<option>Tajawal</option>
-<option>Almarai</option>
-<option>Noto Sans Arabic</option>
-<option>IBM Plex Sans Arabic</option>
-<option>Readex Pro</option>
-<option>Amiri</option>
-<option>Arial</option>
-<option>Tahoma</option>
-</select>
-<input type="number" id="sizeTop" value="40">
-<button onclick="drawText()">إضافة</button>
-
-<hr>
-
-<h3>🧾 الشريط السفلي</h3>
-<input id="textBar" placeholder="نص الشريط">
-<input type="color" id="barColor" value="#ffffff">
-<input type="color" id="barTextColor" value="#000000">
-<input type="number" id="barH" value="80">
-<input type="number" id="barFontSize" value="30">
-
-<select id="barFont">
-<option>Cairo</option>
-<option>Tajawal</option>
-<option>Almarai</option>
-<option>Noto Sans Arabic</option>
-<option>IBM Plex Sans Arabic</option>
-<option>Readex Pro</option>
-<option>Amiri</option>
-<option>Arial</option>
-<option>Tahoma</option>
+<select id="logoPosition">
+<option value="top-right">أعلى يمين</option>
+<option value="top-left">أعلى يسار</option>
+<option value="bottom-right">أسفل يمين</option>
+<option value="bottom-left">أسفل يسار</option>
+<option value="center">وسط</option>
 </select>
 
-<button onclick="drawBar()">إضافة الشريط</button>
+<button onclick="addLogo()">إضافة الشعار</button>
+</div>
 
-<hr>
-
+<div class="section">
 <h3>🎨 طبقة شفافة</h3>
+<label>لون:</label>
 <input type="color" id="overlayColor" value="#000000">
-<input type="range" id="opacity" min="0" max="1" step="0.1" value="0.3">
+<label>شفافية:</label>
+<input type="range" id="overlayOpacity" min="0" max="1" step="0.05" value="0.30">
+<label>الارتفاع:</label>
+<input type="number" id="overlayHeight" value="180">
 
-<select id="overlayPos">
+<select id="overlayPosition">
 <option value="top">أعلى</option>
 <option value="center">وسط</option>
 <option value="bottom">أسفل</option>
 </select>
 
-<input type="number" id="overlayH" value="150">
-<button onclick="overlay()">تطبيق</button>
+<button onclick="addOverlay()">إضافة طبقة</button>
+</div>
 
-<hr>
+<div class="section">
+<h3>✍️ نص على الصورة</h3>
+<input type="text" id="imageText" placeholder="اكتبي النص هنا">
+<label>حجم:</label>
+<input type="number" id="imageTextSize" value="46">
 
-<h3>🖼️ شعار</h3>
-<input type="file" id="logoUpload">
-
-<select id="logoPos">
-<option value="tr">أعلى يمين</option>
-<option value="tl">أعلى يسار</option>
-<option value="br">أسفل يمين</option>
-<option value="bl">أسفل يسار</option>
+<select id="imageTextFont">
+<option value="Cairo">Cairo</option>
+<option value="Tajawal">Tajawal</option>
+<option value="Almarai">Almarai</option>
+<option value="'Noto Sans Arabic'">Noto Sans Arabic</option>
+<option value="'IBM Plex Sans Arabic'">IBM Plex Sans Arabic</option>
+<option value="'Readex Pro'">Readex Pro</option>
+<option value="Amiri">Amiri</option>
+<option value="Arial">Arial</option>
+<option value="Tahoma">Tahoma</option>
 </select>
 
-<input type="number" id="logoWidth" value="120">
-<button onclick="addLogo()">إضافة الشعار</button>
+<select id="imageTextWeight">
+<option value="700">Bold</option>
+<option value="400">عادي</option>
+<option value="900">ثقيل</option>
+</select>
 
-<hr>
+<label>لون:</label>
+<input type="color" id="imageTextColor" value="#ffffff">
+<label>ظل:</label>
+<input type="checkbox" id="imageTextShadow" checked>
 
-<button onclick="download()">تحميل</button>
-<button onclick="copyImg()">نسخ</button>
+<button onclick="addImageText()">إضافة نص على الصورة</button>
+</div>
+
+<div class="section">
+<h3>🧾 الشريط السفلي</h3>
+<input type="text" id="barText" placeholder="نص الشريط">
+<label>لون الشريط:</label>
+<input type="color" id="barColor" value="#ffffff">
+<label>ارتفاع الشريط:</label>
+<input type="number" id="barHeight" value="95">
+
+<label>حجم خط الشريط:</label>
+<input type="number" id="barTextSize" value="34">
+<label>لون خط الشريط:</label>
+<input type="color" id="barTextColor" value="#111111">
+
+<select id="barTextFont">
+<option value="Cairo">Cairo</option>
+<option value="Tajawal">Tajawal</option>
+<option value="Almarai">Almarai</option>
+<option value="'Noto Sans Arabic'">Noto Sans Arabic</option>
+<option value="'IBM Plex Sans Arabic'">IBM Plex Sans Arabic</option>
+<option value="'Readex Pro'">Readex Pro</option>
+<option value="Amiri">Amiri</option>
+<option value="Arial">Arial</option>
+<option value="Tahoma">Tahoma</option>
+</select>
+
+<select id="barTextWeight">
+<option value="700">Bold</option>
+<option value="400">عادي</option>
+<option value="900">ثقيل</option>
+</select>
+
+<button onclick="addBottomBar()">إضافة الشريط</button>
+</div>
+
+<div class="section">
+<button onclick="deleteSelected()">حذف العنصر المحدد</button>
+<button onclick="downloadImage()">تحميل الصورة</button>
+<button onclick="copyImage()">نسخ الصورة</button>
+<p class="small">يمكنك سحب النص أو الشعار بالماوس بعد إضافته. الشعار يُحافظ على نسبته الأصلية ولا يلتصق بالحواف.</p>
+</div>
 
 </div>
 
-<canvas id="c"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
-const canvas=document.getElementById("c");
-const ctx=canvas.getContext("2d");
-let img=new Image();
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-function HQ(){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";}
+let baseImage = null;
+let originalImage = null;
+let layers = [];
+let selectedLayer = null;
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 
-imgUpload.onchange=e=>{
-let r=new FileReader();
-r.onload=ev=>{
-img.onload=()=>{
-canvas.width=img.width;
-canvas.height=img.height;
-HQ();
-ctx.drawImage(img,0,0);
-w.value=img.width;
-h.value=img.height;
-}
-img.src=ev.target.result;
-}
-r.readAsDataURL(e.target.files[0]);
+function highQuality(context){
+context.imageSmoothingEnabled = true;
+context.imageSmoothingQuality = "high";
 }
 
-function resizeImg(){
-let t=new Image();
-t.onload=()=>{
-canvas.width=w.value;
-canvas.height=h.value;
-HQ();
-ctx.drawImage(t,0,0,w.value,h.value);
-}
-t.src=canvas.toDataURL();
-}
+function render(){
+if(!baseImage) return;
 
-function rotate(){
-let t=document.createElement("canvas");
-let x=t.getContext("2d");
-t.width=canvas.height;
-t.height=canvas.width;
-x.translate(t.width/2,t.height/2);
-x.rotate(Math.PI/2);
-x.drawImage(canvas,-canvas.width/2,-canvas.height/2);
-canvas.width=t.width;
-canvas.height=t.height;
-ctx.drawImage(t,0,0);
+highQuality(ctx);
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle = "#ffffff";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ctx.drawImage(baseImage,0,0,canvas.width,canvas.height);
+
+layers.forEach(layer=>{
+if(layer.type === "overlay"){
+ctx.save();
+ctx.globalAlpha = layer.opacity;
+ctx.fillStyle = layer.color;
+ctx.fillRect(layer.x, layer.y, layer.w, layer.h);
+ctx.restore();
 }
 
-function reset(){
-canvas.width=img.width;
-canvas.height=img.height;
-ctx.drawImage(img,0,0);
+if(layer.type === "bar"){
+ctx.fillStyle = layer.color;
+ctx.fillRect(0, canvas.height - layer.h, canvas.width, layer.h);
+
+ctx.fillStyle = layer.textColor;
+ctx.font = `${layer.weight} ${layer.fontSize}px ${layer.font}`;
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.direction = "rtl";
+ctx.fillText(layer.text, canvas.width/2, canvas.height - layer.h/2);
 }
 
-function drawText(){
-ctx.fillStyle=colorTop.value;
-ctx.font=`bold ${sizeTop.value}px ${fontTop.value}`;
-ctx.textAlign="center";
-ctx.fillText(textTop.value,canvas.width/2,canvas.height/2);
+if(layer.type === "text"){
+ctx.save();
+ctx.font = `${layer.weight} ${layer.size}px ${layer.font}`;
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.direction = "rtl";
+
+if(layer.shadow){
+ctx.strokeStyle = "rgba(0,0,0,.65)";
+ctx.lineWidth = Math.max(3, layer.size / 12);
+ctx.strokeText(layer.text, layer.x, layer.y);
 }
 
-function drawBar(){
-let hgt=+barH.value;
-let t=new Image();
-t.onload=()=>{
-canvas.height=t.height+hgt;
-canvas.width=t.width;
-
-ctx.fillStyle=barColor.value;
-ctx.fillRect(0,t.height,t.width,hgt);
-
-ctx.drawImage(t,0,0);
-
-ctx.fillStyle=barTextColor.value;
-ctx.font=`bold ${barFontSize.value}px ${barFont.value}`;
-ctx.textAlign="center";
-ctx.fillText(textBar.value,t.width/2,t.height+hgt/2);
-}
-t.src=canvas.toDataURL();
+ctx.fillStyle = layer.color;
+ctx.fillText(layer.text, layer.x, layer.y);
+ctx.restore();
 }
 
-function overlay(){
-ctx.globalAlpha=opacity.value;
-ctx.fillStyle=overlayColor.value;
+if(layer.type === "logo"){
+highQuality(ctx);
+ctx.drawImage(layer.img, layer.x, layer.y, layer.w, layer.h);
+}
 
-let y=0;
-if(overlayPos.value=="center") y=canvas.height/2-overlayH.value/2;
-if(overlayPos.value=="bottom") y=canvas.height-overlayH.value;
+if(layer === selectedLayer){
+ctx.save();
+ctx.strokeStyle = "#00AEEF";
+ctx.lineWidth = 3;
+ctx.setLineDash([8,6]);
+ctx.strokeRect(layer.x - 6, layer.y - 6, layer.w + 12, layer.h + 12);
+ctx.restore();
+}
+});
+}
 
-ctx.fillRect(0,y,canvas.width,overlayH.value);
-ctx.globalAlpha=1;
+document.getElementById("imageUpload").addEventListener("change", e=>{
+const file = e.target.files[0];
+if(!file) return;
+
+const reader = new FileReader();
+reader.onload = ev=>{
+const img = new Image();
+img.onload = ()=>{
+originalImage = img;
+baseImage = img;
+canvas.width = img.width;
+canvas.height = img.height;
+document.getElementById("canvasWidth").value = img.width;
+document.getElementById("canvasHeight").value = img.height;
+layers = [];
+selectedLayer = null;
+render();
+};
+img.src = ev.target.result;
+};
+reader.readAsDataURL(file);
+});
+
+function resizeCanvasImage(){
+const w = Number(document.getElementById("canvasWidth").value);
+const h = Number(document.getElementById("canvasHeight").value);
+
+if(!baseImage || !w || !h) return alert("ارفعي صورة واكتبي المقاسات");
+
+canvas.width = w;
+canvas.height = h;
+
+layers.forEach(layer=>{
+clampLayer(layer);
+});
+
+render();
+}
+
+function rotateImage(){
+if(!baseImage) return;
+
+const temp = document.createElement("canvas");
+const tctx = temp.getContext("2d");
+temp.width = canvas.height;
+temp.height = canvas.width;
+
+highQuality(tctx);
+tctx.translate(temp.width/2, temp.height/2);
+tctx.rotate(Math.PI/2);
+tctx.drawImage(canvas, -canvas.width/2, -canvas.height/2);
+
+const img = new Image();
+img.onload = ()=>{
+baseImage = img;
+canvas.width = img.width;
+canvas.height = img.height;
+layers = [];
+selectedLayer = null;
+document.getElementById("canvasWidth").value = canvas.width;
+document.getElementById("canvasHeight").value = canvas.height;
+render();
+};
+img.src = temp.toDataURL("image/png",1);
+}
+
+function resetAll(){
+if(!originalImage) return;
+baseImage = originalImage;
+canvas.width = originalImage.width;
+canvas.height = originalImage.height;
+document.getElementById("canvasWidth").value = canvas.width;
+document.getElementById("canvasHeight").value = canvas.height;
+layers = [];
+selectedLayer = null;
+render();
+}
+
+function addBottomBar(){
+const text = document.getElementById("barText").value.trim();
+if(!text) return alert("اكتبي نص الشريط");
+
+const h = Number(document.getElementById("barHeight").value) || 95;
+
+layers = layers.filter(l => l.type !== "bar");
+
+layers.push({
+type:"bar",
+h:h,
+color:document.getElementById("barColor").value,
+text:text,
+textColor:document.getElementById("barTextColor").value,
+fontSize:Number(document.getElementById("barTextSize").value) || 34,
+font:document.getElementById("barTextFont").value,
+weight:document.getElementById("barTextWeight").value,
+x:0,
+y:canvas.height-h,
+w:canvas.width
+});
+
+render();
+}
+
+function addOverlay(){
+const h = Number(document.getElementById("overlayHeight").value) || 180;
+let y = 0;
+
+if(document.getElementById("overlayPosition").value === "center"){
+y = (canvas.height - h)/2;
+}
+
+if(document.getElementById("overlayPosition").value === "bottom"){
+y = canvas.height - h;
+}
+
+layers.push({
+type:"overlay",
+x:0,
+y:y,
+w:canvas.width,
+h:h,
+color:document.getElementById("overlayColor").value,
+opacity:Number(document.getElementById("overlayOpacity").value)
+});
+
+render();
+}
+
+function addImageText(){
+const text = document.getElementById("imageText").value.trim();
+if(!text) return alert("اكتبي النص");
+
+const size = Number(document.getElementById("imageTextSize").value) || 46;
+const w = Math.max(160, text.length * size * 0.65);
+const h = size * 1.5;
+
+const layer = {
+type:"text",
+text:text,
+x:canvas.width/2,
+y:canvas.height/2,
+w:w,
+h:h,
+size:size,
+color:document.getElementById("imageTextColor").value,
+font:document.getElementById("imageTextFont").value,
+weight:document.getElementById("imageTextWeight").value,
+shadow:document.getElementById("imageTextShadow").checked
+};
+
+layers.push(layer);
+selectedLayer = layer;
+render();
 }
 
 function addLogo(){
-let r=new FileReader();
-r.onload=e=>{
-let l=new Image();
-l.onload=()=>{
-let w=logoWidth.value;
-let ratio=l.height/l.width;
-let h=w*ratio;
+const file = document.getElementById("logoUpload").files[0];
+if(!file) return alert("ارفعي الشعار أولًا");
 
-let margin=20;
+const reader = new FileReader();
+reader.onload = ev=>{
+const logo = new Image();
+logo.onload = ()=>{
+const margin = Number(document.getElementById("logoMargin").value) || 40;
+const logoW = Number(document.getElementById("logoWidth").value) || 170;
+const ratio = logo.height / logo.width;
+const logoH = logoW * ratio;
 
-let x=margin,y=margin;
+let x = margin;
+let y = margin;
+const pos = document.getElementById("logoPosition").value;
 
-if(logoPos.value=="tr"){x=canvas.width-w-margin;y=margin;}
-if(logoPos.value=="tl"){x=margin;y=margin;}
-if(logoPos.value=="br"){x=canvas.width-w-margin;y=canvas.height-h-margin;}
-if(logoPos.value=="bl"){x=margin;y=canvas.height-h-margin;}
+if(pos === "top-right"){ x = canvas.width - logoW - margin; y = margin; }
+if(pos === "top-left"){ x = margin; y = margin; }
+if(pos === "bottom-right"){ x = canvas.width - logoW - margin; y = canvas.height - logoH - margin; }
+if(pos === "bottom-left"){ x = margin; y = canvas.height - logoH - margin; }
+if(pos === "center"){ x = (canvas.width-logoW)/2; y = (canvas.height-logoH)/2; }
 
-ctx.drawImage(l,x,y,w,h);
+const layer = {
+type:"logo",
+img:logo,
+x:x,
+y:y,
+w:logoW,
+h:logoH
+};
+
+clampLayer(layer);
+layers.push(layer);
+selectedLayer = layer;
+render();
+};
+logo.src = ev.target.result;
+};
+reader.readAsDataURL(file);
 }
-l.src=e.target.result;
+
+function clampLayer(layer){
+if(layer.type === "text"){
+const halfW = layer.w / 2;
+const halfH = layer.h / 2;
+layer.x = Math.max(halfW, Math.min(canvas.width - halfW, layer.x));
+layer.y = Math.max(halfH, Math.min(canvas.height - halfH, layer.y));
+} else if(layer.type === "logo"){
+layer.x = Math.max(0, Math.min(canvas.width - layer.w, layer.x));
+layer.y = Math.max(0, Math.min(canvas.height - layer.h, layer.y));
 }
-r.readAsDataURL(logoUpload.files[0]);
 }
 
-function download(){
-let a=document.createElement("a");
-a.href=canvas.toDataURL("image/png",1);
-a.download="busr.png";
+function getPointer(e){
+const rect = canvas.getBoundingClientRect();
+const scaleX = canvas.width / rect.width;
+const scaleY = canvas.height / rect.height;
+return {
+x:(e.clientX - rect.left) * scaleX,
+y:(e.clientY - rect.top) * scaleY
+};
+}
+
+canvas.addEventListener("mousedown", e=>{
+const p = getPointer(e);
+selectedLayer = null;
+
+for(let i=layers.length-1; i>=0; i--){
+const l = layers[i];
+
+if(l.type === "logo"){
+if(p.x >= l.x && p.x <= l.x+l.w && p.y >= l.y && p.y <= l.y+l.h){
+selectedLayer = l;
+dragOffsetX = p.x - l.x;
+dragOffsetY = p.y - l.y;
+isDragging = true;
+break;
+}
+}
+
+if(l.type === "text"){
+if(p.x >= l.x-l.w/2 && p.x <= l.x+l.w/2 && p.y >= l.y-l.h/2 && p.y <= l.y+l.h/2){
+selectedLayer = l;
+dragOffsetX = p.x - l.x;
+dragOffsetY = p.y - l.y;
+isDragging = true;
+break;
+}
+}
+}
+
+render();
+});
+
+canvas.addEventListener("mousemove", e=>{
+if(!isDragging || !selectedLayer) return;
+
+const p = getPointer(e);
+
+if(selectedLayer.type === "logo"){
+selectedLayer.x = p.x - dragOffsetX;
+selectedLayer.y = p.y - dragOffsetY;
+}
+
+if(selectedLayer.type === "text"){
+selectedLayer.x = p.x - dragOffsetX;
+selectedLayer.y = p.y - dragOffsetY;
+}
+
+clampLayer(selectedLayer);
+render();
+});
+
+canvas.addEventListener("mouseup", ()=>{
+isDragging = false;
+});
+
+canvas.addEventListener("mouseleave", ()=>{
+isDragging = false;
+});
+
+function deleteSelected(){
+if(!selectedLayer) return;
+layers = layers.filter(l => l !== selectedLayer);
+selectedLayer = null;
+render();
+}
+
+function downloadImage(){
+render();
+const a = document.createElement("a");
+a.download = "busr-image-editor.png";
+a.href = canvas.toDataURL("image/png",1);
 a.click();
 }
 
-function copyImg(){
-canvas.toBlob(b=>{
-navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
-alert("تم النسخ");
-});
+async function copyImage(){
+render();
+canvas.toBlob(async blob=>{
+try{
+await navigator.clipboard.write([
+new ClipboardItem({"image/png":blob})
+]);
+alert("تم نسخ الصورة ✅");
+}catch(e){
+alert("المتصفح لم يسمح بالنسخ. استخدمي التحميل.");
+}
+},"image/png",1);
 }
 </script>
 
