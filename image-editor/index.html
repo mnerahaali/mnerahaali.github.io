@@ -5,26 +5,40 @@
 <title>محرر الصور</title>
 
 <style>
-body {
-font-family: Arial;
-text-align: center;
-background: #f5f5f5;
+body{
+font-family: Arial, sans-serif;
+background:#f5f5f5;
+text-align:center;
+margin:0;
+padding:30px;
 }
-
-canvas {
-margin-top: 20px;
-max-width: 90%;
-border-radius: 10px;
+h1{margin-bottom:25px;}
+.panel{
+background:white;
+padding:18px;
+border-radius:14px;
+max-width:900px;
+margin:auto;
+box-shadow:0 4px 18px rgba(0,0,0,.08);
 }
-
-.controls {
-margin-top: 20px;
+input, button, select{
+margin:6px;
+padding:10px;
+border-radius:8px;
+border:1px solid #bbb;
 }
-
-button, input {
-margin: 5px;
-padding: 10px;
+button{
+background:#111;
+color:white;
+cursor:pointer;
 }
+canvas{
+margin-top:20px;
+max-width:95%;
+background:white;
+border-radius:12px;
+}
+.small{font-size:13px;color:#666;}
 </style>
 </head>
 
@@ -32,17 +46,36 @@ padding: 10px;
 
 <h1>✨ محرر الصور</h1>
 
-<input type="file" id="upload">
+<div class="panel">
+<input type="file" id="upload" accept="image/*">
 
-<div class="controls">
+<br><br>
+
 <input type="number" id="width" placeholder="العرض">
 <input type="number" id="height" placeholder="الارتفاع">
-<button onclick="resizeImage()">تغيير المقاس</button>
+<button onclick="resizeImage()">تغيير المقاس بجودة عالية</button>
 
-<button onclick="rotate()">تدوير</button>
-<button onclick="cropCenter()">قص (منتصف)</button>
+<br>
 
-<button onclick="download()">تحميل</button>
+<button onclick="cropCenter()">قص من المنتصف</button>
+<button onclick="rotateImage()">تدوير 90°</button>
+<button onclick="resetImage()">استعادة الأصل</button>
+
+<br><br>
+
+<input type="text" id="captionText" placeholder="اكتبي النص هنا">
+<input type="number" id="fontSize" value="34" placeholder="حجم الخط">
+<select id="barOption">
+<option value="no">بدون شريط</option>
+<option value="yes">إضافة شريط أبيض أسفل الصورة</option>
+</select>
+<button onclick="addCaption()">إضافة النص</button>
+
+<br><br>
+
+<button onclick="downloadImage()">تحميل الصورة</button>
+
+<p class="small">ملاحظة: أفضل جودة تكون عند التصغير لا التكبير. التكبير الكبير قد يقلل الوضوح مهما كان المحرر.</p>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -50,75 +83,187 @@ padding: 10px;
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-let img = new Image();
 
-document.getElementById("upload").addEventListener("change", function(e) {
+let originalImage = new Image();
+let currentImageDataURL = null;
+
+function drawImageHighQuality(image, width, height) {
+canvas.width = width;
+canvas.height = height;
+
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = "high";
+
+ctx.clearRect(0, 0, width, height);
+ctx.drawImage(image, 0, 0, width, height);
+}
+
+document.getElementById("upload").addEventListener("change", function(e){
 const file = e.target.files[0];
+if(!file) return;
+
 const reader = new FileReader();
 
-reader.onload = function(event) {
-img.src = event.target.result;
+reader.onload = function(event){
+originalImage = new Image();
+originalImage.onload = function(){
+drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
+document.getElementById("width").value = originalImage.width;
+document.getElementById("height").value = originalImage.height;
+saveCurrent();
+};
+originalImage.src = event.target.result;
 };
 
 reader.readAsDataURL(file);
 });
 
-img.onload = function() {
-canvas.width = img.width;
-canvas.height = img.height;
-ctx.drawImage(img, 0, 0);
-};
-
-// تغيير المقاس
-function resizeImage() {
-let w = document.getElementById("width").value;
-let h = document.getElementById("height").value;
-
-canvas.width = w;
-canvas.height = h;
-
-ctx.drawImage(img, 0, 0, w, h);
+function saveCurrent(){
+currentImageDataURL = canvas.toDataURL("image/png", 1.0);
 }
 
-// تدوير
-function rotate() {
-let tempCanvas = document.createElement("canvas");
-let tempCtx = tempCanvas.getContext("2d");
-
-tempCanvas.width = canvas.height;
-tempCanvas.height = canvas.width;
-
-tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
-tempCtx.rotate(Math.PI / 2);
-tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
-
-canvas.width = tempCanvas.width;
-canvas.height = tempCanvas.height;
-
-ctx.drawImage(tempCanvas, 0, 0);
+function getCanvasAsImage(callback){
+const image = new Image();
+image.onload = () => callback(image);
+image.src = canvas.toDataURL("image/png", 1.0);
 }
 
-// قص من المنتصف
-function cropCenter() {
-let cropWidth = canvas.width / 2;
-let cropHeight = canvas.height / 2;
+function resizeImage(){
+const w = Number(document.getElementById("width").value);
+const h = Number(document.getElementById("height").value);
 
-let x = (canvas.width - cropWidth) / 2;
-let y = (canvas.height - cropHeight) / 2;
-
-let imageData = ctx.getImageData(x, y, cropWidth, cropHeight);
-
-canvas.width = cropWidth;
-canvas.height = cropHeight;
-
-ctx.putImageData(imageData, 0, 0);
+if(!w || !h){
+alert("اكتبي العرض والارتفاع أولًا");
+return;
 }
 
-// تحميل
-function download() {
-let link = document.createElement("a");
-link.download = "image.png";
-link.href = canvas.toDataURL();
+getCanvasAsImage(function(image){
+drawImageHighQuality(image, w, h);
+saveCurrent();
+});
+}
+
+function cropCenter(){
+const cropW = Math.floor(canvas.width * 0.75);
+const cropH = Math.floor(canvas.height * 0.75);
+const x = Math.floor((canvas.width - cropW) / 2);
+const y = Math.floor((canvas.height - cropH) / 2);
+
+const temp = document.createElement("canvas");
+const tctx = temp.getContext("2d");
+
+temp.width = cropW;
+temp.height = cropH;
+
+tctx.imageSmoothingEnabled = true;
+tctx.imageSmoothingQuality = "high";
+tctx.drawImage(canvas, x, y, cropW, cropH, 0, 0, cropW, cropH);
+
+canvas.width = cropW;
+canvas.height = cropH;
+ctx.drawImage(temp, 0, 0);
+
+document.getElementById("width").value = cropW;
+document.getElementById("height").value = cropH;
+
+saveCurrent();
+}
+
+function rotateImage(){
+const temp = document.createElement("canvas");
+const tctx = temp.getContext("2d");
+
+temp.width = canvas.height;
+temp.height = canvas.width;
+
+tctx.imageSmoothingEnabled = true;
+tctx.imageSmoothingQuality = "high";
+
+tctx.translate(temp.width / 2, temp.height / 2);
+tctx.rotate(Math.PI / 2);
+tctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+
+canvas.width = temp.width;
+canvas.height = temp.height;
+ctx.drawImage(temp, 0, 0);
+
+document.getElementById("width").value = canvas.width;
+document.getElementById("height").value = canvas.height;
+
+saveCurrent();
+}
+
+function addCaption(){
+const text = document.getElementById("captionText").value.trim();
+const fontSize = Number(document.getElementById("fontSize").value) || 34;
+const addBar = document.getElementById("barOption").value === "yes";
+
+if(!text){
+alert("اكتبي النص أولًا");
+return;
+}
+
+getCanvasAsImage(function(image){
+const barHeight = addBar ? Math.max(80, fontSize * 2.2) : 0;
+const newWidth = image.width;
+const newHeight = image.height + barHeight;
+
+canvas.width = newWidth;
+canvas.height = newHeight;
+
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = "high";
+
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, newWidth, newHeight);
+
+ctx.drawImage(image, 0, 0);
+
+if(addBar){
+ctx.fillStyle = "white";
+ctx.fillRect(0, image.height, newWidth, barHeight);
+ctx.fillStyle = "#111";
+ctx.textBaseline = "middle";
+ctx.textAlign = "center";
+ctx.direction = "rtl";
+ctx.font = `bold ${fontSize}px Arial`;
+ctx.fillText(text, newWidth / 2, image.height + barHeight / 2);
+} else {
+ctx.fillStyle = "white";
+ctx.strokeStyle = "rgba(0,0,0,.65)";
+ctx.lineWidth = Math.max(3, fontSize / 12);
+ctx.textBaseline = "bottom";
+ctx.textAlign = "center";
+ctx.direction = "rtl";
+ctx.font = `bold ${fontSize}px Arial`;
+
+const x = newWidth / 2;
+const y = newHeight - 25;
+
+ctx.strokeText(text, x, y);
+ctx.fillText(text, x, y);
+}
+
+saveCurrent();
+});
+}
+
+function resetImage(){
+if(!originalImage.src){
+alert("ارفعي صورة أولًا");
+return;
+}
+
+drawImageHighQuality(originalImage, originalImage.width, originalImage.height);
+document.getElementById("width").value = originalImage.width;
+document.getElementById("height").value = originalImage.height;
+saveCurrent();
+}
+
+function downloadImage(){
+const link = document.createElement("a");
+link.download = "edited-image.png";
+link.href = canvas.toDataURL("image/png", 1.0);
 link.click();
 }
 </script>
